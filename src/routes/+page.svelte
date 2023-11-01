@@ -19,7 +19,6 @@
 
 	let query = '';
 	$: searchResult = fuse.search(query);
-	$: console.log(searchResult);
 </script>
 
 <h1>Schemes</h1>
