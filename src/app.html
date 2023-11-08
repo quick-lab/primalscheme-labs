@@ -7,6 +7,11 @@
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
-		<main class="container"><div style="display: contents">%sveltekit.body%</div></main>
+		<main class="container">
+			<div id="pico-root" style="display: contents">%sveltekit.body%</div>
+		</main>
 	</body>
 </html>
+
+// variables.scss $semantic-root-element: "div#pico-root" // OR whever you import pico
+$semantic-root-element: "div#pico-root" @import '@picocss/pico/scss/pico';

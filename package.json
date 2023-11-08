@@ -28,6 +28,8 @@
 	"type": "module",
 	"dependencies": {
 		"@picocss/pico": "^1.5.10",
-		"fuse.js": "^7.0.0"
+		"fuse.js": "^7.0.0",
+		"plotly.js": "^1.47.4",
+		"plotly.js-dist-min": "^2.27.0"
 	}
 }
