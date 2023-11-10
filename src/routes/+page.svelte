@@ -31,6 +31,7 @@
 		<tr>
 			<th>Scheme name</th>
 			<th>Amplicon size</th>
+			<th>Version</th>
 			<th>Status</th>
 		</tr>
 		{#each searchResult as result}

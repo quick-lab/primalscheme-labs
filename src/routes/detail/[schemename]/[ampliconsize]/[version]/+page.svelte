@@ -10,7 +10,7 @@
 	// Log data to see if working
 	onMount(async function () {
 		const response = await fetch(scheme.info_json_url);
-		let infoJson = await response.text();
+		let infoJson = await response.json();
 		console.log(infoJson);
 		info = infoJson;
 		loadingData = false;
@@ -19,22 +19,36 @@
 
 <html>
 	<body>
-		<h1>{scheme.schemeName} {scheme.ampliconSize} {scheme.versionNumber}</h1>
+		<h1>{scheme.schemename} {scheme.ampliconsize} {scheme.schemeversion}</h1>
 		<br />
-
 		{#if loadingData}
 			<p>Loading data...</p>
 		{:else}
-			<p>Info: {info}</p>
+			{#if info.description}
+				<details open>
+					<summary>Description</summary>
+					<p>{info.description}</p>
+				</details>
+			{/if}
+			<h2>Scheme Overview</h2>
 			<AmpliconPlot bedfileUrl={scheme.primer_bed_url} />
-		{/if}
-		<br />
-		<br />
-		<h2>Scheme details</h2>
 
-		{#each Object.keys(scheme) as key}
-			<p><b>{key}</b>: {scheme[key]}</p>
-		{/each}
-		<!-- <article><p>{@html showDetails(scheme)}</p></article> -->
+			<br />
+
+			<details>
+				<summary>Downloads</summary>
+				<a href={scheme.primer_bed_url} role="button">primer.bed</a>
+				<a href={scheme.reference_fasta_url} role="button">reference.fasta</a>
+			</details>
+			<br />
+
+			<details>
+				<summary>Scheme Details</summary>
+				{#each Object.keys(info) as key}
+					<p><b>{key}</b>: {info[key]}</p>
+				{/each}
+			</details>
+			<h2>Bedfile</h2>
+		{/if}
 	</body>
 </html>

@@ -44,7 +44,7 @@
                     "species": [
                         10407
                     ],
-                    "status": "draft"
+                    "status": "tested"
                 }
             }
         },
@@ -98,7 +98,7 @@
                     "species": [
                         2697049
                     ],
-                    "status": "deprecated"
+                    "status": "withdrawn"
                 },
                 "v2.0.0": {
                     "algorithmversion": "primalscheme1:1.0.0",
