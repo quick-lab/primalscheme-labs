@@ -4,7 +4,7 @@
 </script>
 
 <tr>
-    <td><a href={`/detail/${scheme.schemename}/${scheme.ampliconsize}/${scheme.schemeversion}?query=${query}`}>{scheme.schemeName}</a></td>
+    <td><a href={`/detail/${scheme.schemename}/${scheme.ampliconsize}/${scheme.schemeversion}?q=${query}`}>{scheme.schemeName}</a></td>
     <td>{scheme.ampliconsize}</td>
 	<td>{scheme.schemeversion}</td>
     <td><span class='pill {scheme.status}'><b>{scheme.status}</b></span></td>

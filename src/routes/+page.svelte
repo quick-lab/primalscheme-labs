@@ -1,11 +1,15 @@
 <script>
 	import SearchBar from './SearchBar.svelte';
 	import ResultsRow from './ResultsRow.svelte';
+	import { goto } from '$app/navigation'
+    import { browser } from '$app/environment';
+	import { page } from '$app/stores';
+
 	import schemes from '$lib/assets/schemes.json';
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 	import Fuse from 'fuse.js';
 	import "@picocss/pico";
-	import { page } from '$app/stores';
+	import Pagination from './Pagination.svelte';
 
 	// Flatten the scheme
 	const flatSchemes = flattenedSchemeIndex(schemes);
@@ -15,19 +19,61 @@
 		keys: ['schemeName', 'ampliconSize']
 	};
 
+	export let data;
+
+	let query = data.query;
+
+	let pageNum = data.pageNum; // set a page number
+	
 	const fuse = new Fuse(flatSchemes, fuseOptions);
+	$: flatSearchResult = query.trim().length ? fuse.search(query)  : flatSchemes.map(
+        (item, index) => ({
+          item,
+          refIndex: index,
+          matches: [],
+          score: 1,
+        }),
+      );
 
-	let query = $page.url.searchParams.get('query') || '';
+	// Pages
+	const pageSize = 2;
+	$: pageIndex = pageNum -1;
+	$: pageCount = Math.ceil(flatSearchResult.length / pageSize);
 
-	$: searchResult = fuse.search(query);
+	$: searchResult = flatSearchResult.slice(
+		pageIndex * pageSize,
+		pageIndex * pageSize + pageSize,
+	);
+
+
+	let timer;
+	const debouncedSubmit = async () => {
+		clearTimeout(timer);
+		timer = setTimeout(onSubmit, 250);
+	}
+
+	let onSubmit = async () => {
+      let navSearchQuery = $page.url.searchParams.get('q') || '';
+
+      if (query.trim() == navSearchQuery.trim())
+        return
+
+      await goto(query.trim().length ? `/?q=${encodeURIComponent(query.trim())}` : '/', {
+        keepFocus: true
+      })
+    }
 </script>
 
 <h1>Schemes</h1>
 
 <h4>Search</h4>
-<SearchBar bind:query />
+<form on:submit|preventDefault={onSubmit}>
+	<input type="text" bind:value={query} on:keyup={debouncedSubmit} />	
+</form>
+
 
 {#if searchResult.length > 0}
+	<Pagination pageCount={pageCount} pageNum={pageNum} resultCount={flatSearchResult.length} pageSize={searchResult.length}/>
 	<table role='grid'>
 		<tr>
 			<th>Scheme name</th>

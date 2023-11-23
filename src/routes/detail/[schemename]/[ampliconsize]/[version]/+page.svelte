@@ -2,17 +2,13 @@
 	import { onMount } from 'svelte';
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from './AdvancedPlot.svelte';
-	import { page } from '$app/stores';
 
 	export let data;
 
 	const scheme = data.scheme;
-	let query = $page.url.searchParams.get('query') || '';
 
 	let loadingData = true;
 	let info = undefined;
-
-	let searchUrl = `/?query=${query}`;
 
 	// Log data to see if working
 	onMount(async function () {
@@ -24,12 +20,6 @@
 </script>
 
 <h2>{scheme.schemename} {scheme.ampliconsize} {scheme.schemeversion}</h2>
-<nav class="breadcrumb" aria-label="breadcrumb">
-	<ul>
-		<li><a href={searchUrl}>Search Results</a></li>
-		<li>{scheme.schemename} {scheme.ampliconsize} {scheme.schemeversion}</li>
-	</ul>
-</nav>
 
 {#if loadingData}
 	<p>Loading data...</p>
@@ -63,7 +53,7 @@
 
 <style>
 	h2 {
-		margin-bottom: 0.2em;
+		margin-bottom: 0.4em;
 	}
 	.breadcrumb {
 		margin-bottom: 2em;
