@@ -5,10 +5,10 @@
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 	import Fuse from 'fuse.js';
 	import "@picocss/pico";
+	import { page } from '$app/stores';
 
 	// Flatten the scheme
 	const flatSchemes = flattenedSchemeIndex(schemes);
-	console.log(flatSchemes);
 
 	const fuseOptions = {
 		isCaseSensitive: false,
@@ -17,7 +17,8 @@
 
 	const fuse = new Fuse(flatSchemes, fuseOptions);
 
-	let query = '';
+	let query = $page.url.searchParams.get('query') || '';
+
 	$: searchResult = fuse.search(query);
 </script>
 
@@ -35,7 +36,7 @@
 			<th>Status</th>
 		</tr>
 		{#each searchResult as result}
-		<ResultsRow scheme={result.item} />
+		<ResultsRow scheme={result.item} query={query} />
 		{/each}
 	</table>
 {:else}
