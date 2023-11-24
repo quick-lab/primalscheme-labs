@@ -3,15 +3,18 @@
     export let pageNum;
     export let resultCount;
     export let pageSize;
+    export let query;
+
+    $: queryStr = query.trim().length ? `/?q=${encodeURIComponent(query.trim())}&` : '/?';
 
 </script>
 
-<nav>
+<nav data-sveltekit-reload>
     <p>Showing {pageSize} of {resultCount} results</p>
 <ul>
     {#each Array(pageCount) as _, i}
         <li>
-            <a class:active={i==pageNum-1} href={`?page=${i+1}`}>{i+1}</a>
+            <a class:active={i+ 1==pageNum} href="{queryStr}pageNum={i+1}">{i+1}</a>
         </li>
     {/each}
 </ul>

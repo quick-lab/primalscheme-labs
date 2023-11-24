@@ -36,7 +36,7 @@
       );
 
 	// Pages
-	const pageSize = 2;
+	const pageSize = 4;
 	$: pageIndex = pageNum -1;
 	$: pageCount = Math.ceil(flatSearchResult.length / pageSize);
 
@@ -52,16 +52,23 @@
 		timer = setTimeout(onSubmit, 250);
 	}
 
+	$: if (pageNum > pageCount){
+		pageNum = pageCount;
+	  }
+	
 	let onSubmit = async () => {
       let navSearchQuery = $page.url.searchParams.get('q') || '';
-
-      if (query.trim() == navSearchQuery.trim())
+	  let navPageNum = $page.url.searchParams.get('pageNum') || 1;
+	  
+      if (query.trim() == navSearchQuery.trim() && pageNum == navPageNum.trim()) // don't navigate if the query is the same
         return
-
-      await goto(query.trim().length ? `/?q=${encodeURIComponent(query.trim())}` : '/', {
+	
+      await goto(query.trim().length ? `/?q=${encodeURIComponent(query.trim())}&pageNum=${pageNum}` : `/?pageNum=${pageNum}`, {
         keepFocus: true
       })
     }
+
+
 </script>
 
 <h1>Schemes</h1>
@@ -73,7 +80,7 @@
 
 
 {#if searchResult.length > 0}
-	<Pagination pageCount={pageCount} pageNum={pageNum} resultCount={flatSearchResult.length} pageSize={searchResult.length}/>
+	<Pagination pageCount={pageCount} pageNum={pageNum} resultCount={flatSearchResult.length} pageSize={searchResult.length} query={query}/>
 	<table role='grid'>
 		<tr>
 			<th>Scheme name</th>

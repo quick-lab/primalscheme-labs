@@ -3,7 +3,7 @@
 	import articLogo from '$lib/assets/img/artic-logo.svg';
 </script>
 
-<nav>
+<nav data-sveltekit-reload>
 	<ul>
 	  <li class="logo">
 		<a href="/">
