@@ -8,9 +8,7 @@
         return await new Response(decompressedStream).json();
     }
 
-    function generatePlot(data, elementId, Plotly) {
-        // For each genome, generate a plot
-        for (let [chromname, plotData] of Object.entries(data)) {
+    function generateAdvancedPlot(plotData, div, chromname, Plotly) {
 
             let fPrimerLayout = []
             let rPrimerLayout = []
@@ -42,7 +40,7 @@
                 }
             
 
-            let TESTER = document.getElementById(elementId);
+            
             // Get the amplicondata 
             let ampliconJsonData = plotData.amplicons;
             for (let [ampliconNumber, amplicon] of Object.entries(ampliconJsonData)) {
@@ -103,6 +101,8 @@
             let ampliconLayout = {
                 grid: {rows: 5,columns: 1, pattern: 'coupled', subplots:["xy1","xy2","xy3","xy4"]},
                 plot_bgcolor:"rgb(229,236,245)",
+                width: 1000,
+                height: 800,
                 title: 'Amplicon Plot: ' + chromname,
                 showlegend: false,
                 title_font:{size:18, family:"Arial", color:"Black"},
@@ -306,10 +306,15 @@
                 name:"Thermopassing Primers",
             };
 
+            let config = {responsive: true}
 
-            Plotly.newPlot( TESTER, [ampliconData,occupancyData, gcData ,entropyData,thermopassing_fprimers,thermopassing_rprimers], ampliconLayout );
-    }}
 
+            Plotly.newPlot( div, [ampliconData,occupancyData, gcData ,entropyData,thermopassing_fprimers,thermopassing_rprimers], ampliconLayout, config);
+    }
+
+    let loadingChromNames = true
+    let chromNames = [];
+    let container;
 
     onMount(async function () {
         // this will try and load data from the bedfileUrl 
@@ -321,13 +326,27 @@
         let response;
         let JsonData;
 
-
         try {
             response = await fetch(plotDataurl);
             JsonData = response.blob().then(function (blob) {
                 decompressBlob(blob).then(function (json) {
-                    generatePlot(json, 'advancedPlot',Plotly);
 
+                    // For each chromname
+                    for (let [chromname, plotData] of Object.entries(json)) {
+                        let PlotdivElement = document.createElement("div");
+                        PlotdivElement.id = chromname;
+                        PlotdivElement.style.width = "100%";
+                        PlotdivElement.style.height = "100%";
+
+                        generateAdvancedPlot(plotData, PlotdivElement,chromname,Plotly)
+                        
+                        
+                        let plotBody = document.getElementById("advancedPlot");
+                        plotBody.append(PlotdivElement);
+                        
+                    }
+                    loadingChromNames = false;
+                    
                 })
             })
             
@@ -341,4 +360,4 @@
 
 </script>
 
-<div id="advancedPlot" style="width:90%;height:800px;"></div>
+<body id="advancedPlot"></body>

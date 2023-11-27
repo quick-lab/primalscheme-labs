@@ -22,7 +22,6 @@
 
         let TESTER = document.getElementById('tester');
 
-
         // Determine the number of pools
         let pools = [];
         let length = 0;

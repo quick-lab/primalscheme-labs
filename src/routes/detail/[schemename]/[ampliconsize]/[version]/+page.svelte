@@ -12,10 +12,18 @@
 
 	// Log data to see if working
 	onMount(async function () {
+		// Load plotly
+		let Plotly = (await import('plotly.js-dist-min')).default;
+
+		// Load the info.json
 		const response = await fetch(scheme.info_json_url);
 		let infoJson = await response.json();
 		info = infoJson;
 		loadingData = false;
+
+		// Load the default plot
+
+		// Load the advanced plot
 	});
 </script>
 
@@ -32,6 +40,7 @@
 	{/if}
 	<details open>
 		<summary>Scheme Overview</summary>
+
 		<AmpliconPlot bedfileUrl={scheme.primer_bed_url} />
 		<AdvancedPlot bedfileUrl={scheme.primer_bed_url} />
 	</details>
