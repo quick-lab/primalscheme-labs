@@ -2,6 +2,8 @@ import schemes from '$lib/assets/schemes.json';
 import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 import { error } from '@sveltejs/kit';
 
+
+
 export function load({ params }) {
 
     const flatSchemes = flattenedSchemeIndex(schemes);

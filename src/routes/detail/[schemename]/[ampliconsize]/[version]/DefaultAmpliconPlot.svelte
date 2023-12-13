@@ -1,97 +1,18 @@
 <script>
     export let bedfileUrl;
+    export let hidden = false;
+
     import {onMount} from 'svelte'
 
-    let loadingData = true;
+
     let bedfileText = false;
+    let loading = true;
 
-	// Log data to see if working
-	onMount(async function () {
-        // Load the bedfile
-        let Plotly = (await import('plotly.js-dist-min')).default;
-        let response;
-        
-        try {
-            response = await fetch(bedfileUrl);
-            console.log(response);
-        } catch (error) {
-            console.log(response);
-        }
-        
-        bedfileText  = await response.text();
-
-        let TESTER = document.getElementById('tester');
-
-        // Determine the number of pools
-        let pools = [];
-        let length = 0;
-
-        // Parse the 7 col bedfile data into primers
-        let primerData = [];
-        let lines = bedfileText.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i];
-            let fields = line.split('\t');
-            let primer = {
-                chromname: fields[0],
-                start: parseInt(fields[1]),
-                stop: parseInt(fields[2]),
-                primername: fields[3],
-                pool: parseInt(fields[4]),
-                strand: fields[5],
-                sequence: fields[6],
-                amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
-            };
-            primerData.push(primer);
-            
-            // Make a not of all the pools
-            if (!pools.includes(primer.pool)) {
-                pools.push(primer.pool);
-            }
-            // Make a note of the length
-            if (primer.stop > length) {
-                length = primer.stop;
-            }
-        }
-
-        let chromnameToAmplicons = {};
-
-        // Create each msa by grouping primers by chromname
-        let msaPrimers = Object.groupBy(primerData, ({chromname}) => chromname);
-        for (let chromname in msaPrimers) {
-            let msaData = msaPrimers[chromname];
-            // Create amplicons by combining primers by primernumber
-            let ampliconPrimers = Object.groupBy(msaData, ({amplicon_number}) => amplicon_number);
-            // Generate amplicon data
-            let msaAmplicons = [];
-            for (let ampliconNumber in ampliconPrimers) {
-                // Group primers by strand
-                let primerFR = Object.groupBy(ampliconPrimers[ampliconNumber], ({strand}) => strand);
-
-                let amplicon = {
-                    ampliconNumber: ampliconNumber,
-                    pool: primerFR['+'][0].pool,
-                    forwardPrimers: primerFR['+'],
-                    reversePrimers: primerFR['-'],
-                    start: Math.min(...primerFR['+'].map(({start}) => start)),
-                    stop: Math.max(...primerFR['-'].map(({stop}) => stop)),
-                    coverageStart: Math.min(...primerFR['+'].map(({stop}) => stop)),
-                    coverageStop: Math.max(...primerFR['-'].map(({start}) => start)),
-                    amplicionUUID: primerFR['+'][0].primername.split('_')[0]
-                }
-                msaAmplicons.push(amplicon);
-            }
-            chromnameToAmplicons[chromname] = msaAmplicons;
-        }
-
+    
+    function generateDefaultPlot(amplicons, div, chromname, Plotly, pools, length) {
         let npools = Math.max(...pools);
-
-
-        // For each msa create the plotly data
-        for (let chromname in chromnameToAmplicons) {
-            let amplicons = chromnameToAmplicons[chromname];
-
-            // Work out the number of pools
+            
+        // Work out the number of pools
             let fPrimerLayout = []
             let rPrimerLayout = []
             let ampliconLineLayout = []
@@ -201,27 +122,117 @@
                 },
                 shapes: [...fPrimerLayout, ...rPrimerLayout, ...ampliconLineLayout]
             }
+            let config = {responsive: true}
 
-            Plotly.newPlot( TESTER, [ampliconData], ampliconLayout );
+            Plotly.newPlot( div, [ampliconData], ampliconLayout , config);
     }
+	// Log data to see if working
+	onMount(async function () {
+        // Load the bedfile
+        let Plotly = (await import('plotly.js-dist-min')).default;
+        let response;
+        
+        try {
+            response = await fetch(bedfileUrl);
+            console.log(response);
+        } catch (error) {
+            console.log(response);
+        }
+        
+        bedfileText  = await response.text();
 
-        // All loaded 
-		loadingData = false;
+        // Determine the number of pools
+        let pools = [];
+        let length = 0;
+
+        // Parse the 7 col bedfile data into primers
+        let primerData = [];
+        let lines = bedfileText.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            let fields = line.split('\t');
+            let primer = {
+                chromname: fields[0],
+                start: parseInt(fields[1]),
+                stop: parseInt(fields[2]),
+                primername: fields[3],
+                pool: parseInt(fields[4]),
+                strand: fields[5],
+                sequence: fields[6],
+                amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
+            };
+            primerData.push(primer);
+            
+            // Make a not of all the pools
+            if (!pools.includes(primer.pool)) {
+                pools.push(primer.pool);
+            }
+            // Make a note of the length
+            if (primer.stop > length) {
+                length = primer.stop;
+            }
+        }
+
+        let chromnameToAmplicons = {};
+
+        // Create each msa by grouping primers by chromname
+        let msaPrimers = Object.groupBy(primerData, ({chromname}) => chromname);
+        for (let chromname in msaPrimers) {
+            let msaData = msaPrimers[chromname];
+            // Create amplicons by combining primers by primernumber
+            let ampliconPrimers = Object.groupBy(msaData, ({amplicon_number}) => amplicon_number);
+            // Generate amplicon data
+            let msaAmplicons = [];
+            for (let ampliconNumber in ampliconPrimers) {
+                // Group primers by strand
+                let primerFR = Object.groupBy(ampliconPrimers[ampliconNumber], ({strand}) => strand);
+
+                let amplicon = {
+                    ampliconNumber: ampliconNumber,
+                    pool: primerFR['+'][0].pool,
+                    forwardPrimers: primerFR['+'],
+                    reversePrimers: primerFR['-'],
+                    start: Math.min(...primerFR['+'].map(({start}) => start)),
+                    stop: Math.max(...primerFR['-'].map(({stop}) => stop)),
+                    coverageStart: Math.min(...primerFR['+'].map(({stop}) => stop)),
+                    coverageStop: Math.max(...primerFR['-'].map(({start}) => start)),
+                    amplicionUUID: primerFR['+'][0].primername.split('_')[0]
+                }
+                msaAmplicons.push(amplicon);
+            }
+            chromnameToAmplicons[chromname] = msaAmplicons;
+        }
+
+
+
+        // For each msa create the plotly data
+        for (let chromname in chromnameToAmplicons) {
+            let amplicons = chromnameToAmplicons[chromname];
+
+            console.log(chromname)
+            
+            // Create a new div for the plots
+            let PlotdivElement = document.createElement("div");
+            PlotdivElement.id = chromname;
+            PlotdivElement.style.width = "100%";
+            PlotdivElement.style.height = "100%";
+
+            let plotBody = document.getElementById("defaultPlot");
+            plotBody.append(PlotdivElement);
+            
+            generateDefaultPlot(amplicons, plotBody, chromname, Plotly, pools, length);
+
+            
+    }
+    loading = false;
+
 	});
 
 </script>
 
 
-<div id="tester" style="width:90%;height:500px;"></div>
-<!-- <br>
-<h2>Bedfile</h2>
-{#if loadingData}
-    <p>Loading data...</p>
-{:else}
-    <figure>
-        <a href={bedfileUrl} download role='button'>Download</a>
-    <div class="code">
-        <pre>{bedfileText}</pre>
-    </div>
-    </figure>
-{/if} -->
+{#if loading}
+    <button aria-busy="true">Loading basic plot…</button>    
+{/if}
+<div id="defaultPlot" hidden={hidden}></div>
+

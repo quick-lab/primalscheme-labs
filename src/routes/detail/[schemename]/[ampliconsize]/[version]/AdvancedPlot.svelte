@@ -1,6 +1,8 @@
 <script>
     export let bedfileUrl;
-    import {onMount} from 'svelte'
+    import {onMount, createEventDispatcher} from 'svelte'
+
+    const dispatch = createEventDispatcher();
     
     async function decompressBlob(blob) {
         let ds = new DecompressionStream("gzip");
@@ -101,9 +103,8 @@
             let ampliconLayout = {
                 grid: {rows: 5,columns: 1, pattern: 'coupled', subplots:["xy1","xy2","xy3","xy4"]},
                 plot_bgcolor:"rgb(229,236,245)",
-                width: 1000,
-                height: 800,
                 title: 'Amplicon Plot: ' + chromname,
+                height: 800,
                 showlegend: false,
                 title_font:{size:18, family:"Arial", color:"Black"},
                 xaxis: {
@@ -312,9 +313,8 @@
             Plotly.newPlot( div, [ampliconData,occupancyData, gcData ,entropyData,thermopassing_fprimers,thermopassing_rprimers], ampliconLayout, config);
     }
 
-    let loadingChromNames = true
-    let chromNames = [];
-    let container;
+    let loading = true;
+    let errored = false;
 
     onMount(async function () {
         // this will try and load data from the bedfileUrl 
@@ -325,6 +325,8 @@
 
         let response;
         let JsonData;
+
+        
 
         try {
             response = await fetch(plotDataurl);
@@ -338,21 +340,19 @@
                         PlotdivElement.style.width = "100%";
                         PlotdivElement.style.height = "100%";
 
-                        generateAdvancedPlot(plotData, PlotdivElement,chromname,Plotly)
-                        
-                        
                         let plotBody = document.getElementById("advancedPlot");
                         plotBody.append(PlotdivElement);
-                        
+
+                        generateAdvancedPlot(plotData, PlotdivElement,chromname,Plotly);
                     }
-                    loadingChromNames = false;
-                    
+                    loading = false;
+                    dispatch('loaded')
                 })
             })
             
-            
         } catch (error) {
             console.log(error);
+            errored = true;
         }
 
 
@@ -360,4 +360,11 @@
 
 </script>
 
-<body id="advancedPlot"></body>
+<div id="advancedPlot"></div>
+{#if errored}
+<p>Error loading plot</p>
+{:else if loading}
+<button aria-busy="true">Loading Advanced plot…</button>
+{/if}
+
+
