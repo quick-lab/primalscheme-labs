@@ -79,15 +79,16 @@
 </form>
 
 
+
 {#if searchResult.length > 0}
-	<Pagination pageCount={pageCount} pageNum={pageNum} resultCount={flatSearchResult.length} pageSize={searchResult.length} query={query}/>
-	<table role='grid'>
-		<tr>
+<table role='grid'>
+		<!-- <tr>
 			<th>Scheme name</th>
 			<th>Amplicon size</th>
 			<th>Version</th>
 			<th>Status</th>
-		</tr>
+		</tr> -->
+		<hr>
 		{#each searchResult as result}
 		<ResultsRow scheme={result.item} query={query} />
 		{/each}
@@ -95,7 +96,8 @@
 {:else}
 	<p>No results</p>
 {/if}
-
+<Pagination pageCount={pageCount} pageNum={pageNum} resultCount={flatSearchResult.length} pageSize={searchResult.length} query={query}/>
+	
 
 
 

@@ -75,6 +75,10 @@
 	.gitlogo {
 		height: 22px;
 	}
+	aside {
+		margin-top: 20px;
+		padding: 20px;
+	}
 </style>
 
 <!-- 0, 68, 77 -->

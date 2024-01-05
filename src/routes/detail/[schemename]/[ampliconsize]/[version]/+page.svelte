@@ -7,16 +7,45 @@
 
 	const scheme = data.scheme;
 
-	let loadingData = true;
-	let info = undefined;
-
 	let advancedPlotIsLoaded = false;
 
 	function handleAdvLoaded() {
 		advancedPlotIsLoaded = true;
 	}
 
-	let errorOnFetch = false;
+	async function handleReferenceClick() {
+		referenceNotClicked = false;
+		referenceLoading = true;
+
+		// Load the reference
+		try {
+			let referenceResponce = await fetch(scheme.reference_fasta_url);
+			referenceData = await referenceResponce.text();
+			referenceLoading = false;
+			referenceError = false;
+		} catch (e) {
+			console.error(e);
+			referenceLoading = false;
+			referenceError = true;
+		}
+	}
+
+	// Info.json state
+	let loadingInfoJson = true;
+	let infoJsonError = false;
+	let info = undefined;
+
+	// Bedfile state
+	let bedFileError = false;
+	let loadingBedfile = true;
+	let bedfile = undefined;
+
+	// Reference state
+	let referenceNotClicked = true;
+	let referenceLoading = false;
+	let referenceError = false;
+	let referenceData;
+
 	// Log data to see if working
 	onMount(async function () {
 		// Load plotly
@@ -27,57 +56,152 @@
 			const response = await fetch(scheme.info_json_url);
 			let infoJson = await response.json();
 			info = infoJson;
-			loadingData = false;
+			loadingInfoJson = false;
 		} catch (e) {
 			console.error(e);
-			errorOnFetch = true;
+			infoJsonError = true;
+		}
+
+		// Load the primer.bed
+		try {
+			let bedfileResponce = await fetch(scheme.primer_bed_url);
+			bedfile = await bedfileResponce.text().then((text) =>
+				text
+					.trim()
+					.split('\n')
+					.map((bedline) => bedline.split('\t'))
+			);
+
+			loadingBedfile = false;
+		} catch (e) {
+			console.error(e);
+			bedFileError = true;
 		}
 	});
 </script>
 
-<h2>{scheme.schemename} {scheme.ampliconsize} {scheme.schemeversion}</h2>
+<h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2>
 
-{#if errorOnFetch}
+{#if infoJsonError}
 	<dialog open>
 		<article>
 			<h2>Error</h2>
 			<p>There was an error loading the data. Please go back.</p>
 		</article>
 	</dialog>
-{:else if loadingData}
-	<p>Loading data...</p>
+{:else if loadingInfoJson}
+	<p aria-busy="true">Loading data...</p>
 {:else}
 	{#if info.description}
-		<details open>
-			<summary>Description</summary>
-			<p>{info.description}</p>
-		</details>
+		<p>{info.description}</p>
 	{/if}
-	<details open>
-		<summary>Scheme Overview</summary>
+
+	<article>
+		<header>Scheme Overview</header>
 		<AmpliconPlot hidden={advancedPlotIsLoaded} bedfileUrl={scheme.primer_bed_url} />
-
 		<AdvancedPlot on:loaded={handleAdvLoaded} bedfileUrl={scheme.primer_bed_url} />
-	</details>
+	</article>
+{/if}
 
-	<details>
-		<summary>Downloads</summary>
-		<a href={scheme.primer_bed_url} role="button">primer.bed</a>
-		<a href={scheme.reference_fasta_url} role="button">reference.fasta</a>
-	</details>
+<h2>Scheme Details</h2>
+{#if loadingInfoJson}
+	<p aria-busy="true">Loading data...</p>
+{:else if infoJsonError}
+	<p>Error loading data</p>
+{:else}
+	<article>
+		<header>
+			<nav>
+				<li><strong>info.json</strong></li>
+				<li><a href={scheme.info_json_url}>download</a></li>
+			</nav>
+		</header>
+		<table>
+			{#each Object.keys(info) as key}
+				<tr>
+					<td><b>{key}:</b></td>
+					<td> {info[key]}</td>
+				</tr>
+			{/each}
+		</table>
+	</article>
+{/if}
 
-	<details>
-		<summary>Scheme Details</summary>
-		{#each Object.keys(info) as key}
-			<p><b>{key}</b>: {info[key]}</p>
-		{/each}
-	</details>
-	<h2>Bedfile</h2>
+<h2>Bedfile</h2>
+{#if bedFileError}
+	<p>Error loading bedfile</p>
+{:else if loadingBedfile}
+	<p aria-busy="true">Loading bedfile...</p>
+{:else}
+	<article>
+		<header>
+			<nav>
+				<li><strong>primer.bed</strong></li>
+				<li><a href={scheme.primer_bed_url}>download</a></li>
+			</nav>
+		</header>
+		<table>
+			{#each bedfile as bedline}
+				<tr>
+					{#each bedline as column}
+						<td>{column}</td>
+					{/each}
+				</tr>
+			{/each}
+		</table>
+	</article>
+{/if}
+
+<h2>Reference</h2>
+{#if loadingInfoJson}
+	<p aria-busy="true">Loading data...</p>
+{:else if infoJsonError}
+	<p>Error loading data</p>
+{:else}
+	<article>
+		<header>
+			<nav>
+				<li><strong>reference.fasta</strong></li>
+				<li><a href={scheme.reference_fasta_url}>download</a></li>
+			</nav>
+		</header>
+		{#if referenceNotClicked}
+			<p>Click the button below to load the reference.</p>
+			<a on:click={handleReferenceClick}>Load reference</a>
+		{:else if referenceLoading}
+			<p aria-busy="true">Loading reference...</p>
+		{:else if referenceError}
+			<p>Error loading reference</p>
+		{:else}
+			<pre>{referenceData}</pre>
+		{/if}
+	</article>
 {/if}
 
 <style>
 	h2 {
 		margin-bottom: 0.4em;
+	}
+	td {
+		border: none;
+		margin-bottom: 0em;
+		line-height: 0.5em;
+	}
+	.dropdown {
+		background-color: #00444d;
+		color: rgb(255, 254, 247);
+	}
+
+	article header {
+		background-color: #00444d;
+		color: rgb(255, 254, 247);
+	}
+	article header a {
+		color: rgb(255, 254, 247);
+	}
+	article header a:hover {
+		color: rgb(255, 254, 247);
+		text-decoration: underline;
 	}
 	.breadcrumb {
 		margin-bottom: 2em;
