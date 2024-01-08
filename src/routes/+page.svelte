@@ -36,7 +36,7 @@
       );
 
 	// Pages
-	const pageSize = 4;
+	const pageSize = 25;
 	$: pageIndex = pageNum -1;
 	$: pageCount = Math.ceil(flatSearchResult.length / pageSize);
 

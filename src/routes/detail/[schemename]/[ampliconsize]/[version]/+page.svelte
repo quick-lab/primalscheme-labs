@@ -80,7 +80,12 @@
 	});
 </script>
 
-<h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2>
+<nav>
+	<ul><h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2></ul>
+	<ul>
+		<span class="pill {scheme.status}"><strong>{scheme.status}</strong></span>
+	</ul>
+</nav>
 
 {#if infoJsonError}
 	<dialog open>
@@ -166,7 +171,6 @@
 			</nav>
 		</header>
 		{#if referenceNotClicked}
-			<p>Click the button below to load the reference.</p>
 			<a on:click={handleReferenceClick}>Load reference</a>
 		{:else if referenceLoading}
 			<p aria-busy="true">Loading reference...</p>
@@ -179,6 +183,8 @@
 {/if}
 
 <style>
+	@import '$lib/assets/css/pills.css';
+	@import '$lib/assets/css/article.css';
 	h2 {
 		margin-bottom: 0.4em;
 	}
@@ -190,18 +196,6 @@
 	.dropdown {
 		background-color: #00444d;
 		color: rgb(255, 254, 247);
-	}
-
-	article header {
-		background-color: #00444d;
-		color: rgb(255, 254, 247);
-	}
-	article header a {
-		color: rgb(255, 254, 247);
-	}
-	article header a:hover {
-		color: rgb(255, 254, 247);
-		text-decoration: underline;
 	}
 	.breadcrumb {
 		margin-bottom: 2em;
