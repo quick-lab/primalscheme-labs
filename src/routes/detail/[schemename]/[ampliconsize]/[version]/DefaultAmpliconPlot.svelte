@@ -203,11 +203,13 @@
             chromnameToAmplicons[chromname] = msaAmplicons;
         }
 
+
+
         // For each msa create the plotly data
         for (let chromname in chromnameToAmplicons) {
             let amplicons = chromnameToAmplicons[chromname];
 
-            length = Math.max(...amplicons.map(({stop}) => stop));
+            console.log(chromname)
             
             // Create a new div for the plots
             let PlotdivElement = document.createElement("div");
@@ -218,7 +220,7 @@
             let plotBody = document.getElementById("defaultPlot");
             plotBody.append(PlotdivElement);
             
-            generateDefaultPlot(amplicons, PlotdivElement, chromname, Plotly, pools, length);
+            generateDefaultPlot(amplicons, plotBody, chromname, Plotly, pools, length);
 
             
     }
