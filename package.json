@@ -27,6 +27,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@giscus/svelte": "^2.4.0",
 		"@picocss/pico": "^1.5.10",
 		"@sentry/sveltekit": "^7.86.0",
 		"bootstrap": "^5.3.2",
