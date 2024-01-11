@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from './AdvancedPlot.svelte';
+	import 'giscus';
 
 	export let data;
 
@@ -177,6 +178,22 @@
 		{/if}
 	</article>
 {/if}
+
+<giscus-widget
+	id="comments"
+	repo="quick-lab/primerschemes"
+	repoid="R_kgDOKTGGTw"
+	category="Announcements"
+	categoryid="DIC_kwDOKTGGT84CcWWD"
+	term="Welcome to giscus!"
+	reactionsenabled="1"
+	emitmetadata="0"
+	inputposition="top"
+	theme="light"
+	lang="en"
+	loading="lazy"
+	mapping="{scheme.schemename}/{scheme.ampliconsize}/{scheme.schemeversion}"
+/>
 
 <style>
 	h2 {
