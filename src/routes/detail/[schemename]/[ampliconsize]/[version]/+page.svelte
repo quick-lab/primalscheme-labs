@@ -185,14 +185,14 @@
 	repoid="R_kgDOKTGGTw"
 	category="Announcements"
 	categoryid="DIC_kwDOKTGGT84CcWWD"
-	term="Welcome to giscus!"
 	reactionsenabled="1"
 	emitmetadata="0"
 	inputposition="top"
 	theme="light"
 	lang="en"
 	loading="lazy"
-	mapping="{scheme.schemename}/{scheme.ampliconsize}/{scheme.schemeversion}"
+	term="{scheme.schemename}/{scheme.ampliconsize}/{scheme.schemeversion}"
+	mapping="specific"
 />
 
 <style>
