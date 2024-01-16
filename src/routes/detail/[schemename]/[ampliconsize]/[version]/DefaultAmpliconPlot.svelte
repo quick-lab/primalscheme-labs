@@ -13,118 +13,141 @@
         let npools = Math.max(...pools);
             
         // Work out the number of pools
-            let fPrimerLayout = []
-            let rPrimerLayout = []
-            let ampliconLineLayout = []
-            // Add the points for the primers
-            let ampliconPointDataX = []
-            let ampliconPointDataY = []
-            let ampliconPointDataLabel = []
+        let fPrimerLayout = []
+        let rPrimerLayout = []
+        let ampliconLineLayout = []
+        // Add the points for the primers
+        let ampliconPointDataX = []
+        let ampliconPointDataY = []
+        let ampliconPointDataLabel = []
             
-            
-            for (var i = 0; i < amplicons.length; i++) {
-                let amplicon = amplicons[i];
-                let fpLayout = {
-                    type: 'rect',
-                    x0: amplicon.start,
-                    x1: amplicon.coverageStart,
-                    y0: amplicon.pool-0.05,
-                    y1: amplicon.pool+0.05,
-                    fillcolor:"LightSalmon",
-                    line: {color:"LightSalmon", width:2
-                    }
+        // Handle regualr amplicons    
+        for (var i = 0; i < amplicons.length; i++) {
+            let amplicon = amplicons[i];
+            let fpLayout = {
+                type: 'rect',
+                x0: amplicon.start,
+                x1: amplicon.coverageStart,
+                y0: amplicon.pool-0.05,
+                y1: amplicon.pool+0.05,
+                fillcolor:"LightSalmon",
+                line: {color:"LightSalmon", width:2
                 }
-                fPrimerLayout.push(fpLayout);
+            }
+            fPrimerLayout.push(fpLayout);
 
-                let rpLayout = {
-                    type: 'rect',
-                    x0: amplicon.coverageStop,
-                    x1: amplicon.stop,
-                    y0: amplicon.pool-0.05,
-                    y1: amplicon.pool+0.05,
-                    fillcolor:"LightSalmon",
-                    line: {color:"LightSalmon", width:2
-                    }
+            let rpLayout = {
+                type: 'rect',
+                x0: amplicon.coverageStop,
+                x1: amplicon.stop,
+                y0: amplicon.pool-0.05,
+                y1: amplicon.pool+0.05,
+                fillcolor:"LightSalmon",
+                line: {color:"LightSalmon", width:2
                 }
-                rPrimerLayout.push(rpLayout);
+            }
+            rPrimerLayout.push(rpLayout);
 
-                let ampliconLine = {
+            if (amplicon.coverageStart > amplicon.coverageStop) {
+                // Circular amplicon
+                let ampliconLineLeft = {
                     type: 'line',
                     x0: amplicon.coverageStart,
+                    x1: length,
+                    y0: amplicon.pool,
+                    y1: amplicon.pool,
+                    line: {color:"LightSeaGreen", width:5}
+                }
+                ampliconLineLayout.push(ampliconLineLeft);
+                let ampliconLineRight = {
+                    type: 'line',
+                    x0: 0,
                     x1: amplicon.coverageStop,
                     y0: amplicon.pool,
                     y1: amplicon.pool,
-                    line: {color:"LightSeaGreen", width:5
-                    }
+                    line: {color:"LightSeaGreen", width:5}
                 }
-                ampliconLineLayout.push(ampliconLine);
-
-                // Add the points for the primers
-                // FPrimer
-                ampliconPointDataX.push(amplicon.start);
-                ampliconPointDataY.push(amplicon.pool);
-                ampliconPointDataLabel.push(amplicon.amplicionUUID + "_"+  amplicon.ampliconNumber + '_LEFT');
-                //RPrimer
-                ampliconPointDataX.push(amplicon.stop);
-                ampliconPointDataY.push(amplicon.pool);
-                ampliconPointDataLabel.push(amplicon.amplicionUUID+ "_"+ amplicon.ampliconNumber+ '_RIGHT');
+                ampliconLineLayout.push(ampliconLineRight);
             }
+            else {
+                // Linear amplicon
+                let ampliconLine = {
+                type: 'line',
+                x0: amplicon.coverageStart,
+                x1: amplicon.coverageStop,
+                y0: amplicon.pool,
+                y1: amplicon.pool,
+                line: {color:"LightSeaGreen", width:5}
+            }
+            ampliconLineLayout.push(ampliconLine);
+            }
+
+            
+            
+
+            // Add the points for the primers
+            // FPrimer
+            ampliconPointDataX.push(amplicon.start);
+            ampliconPointDataY.push(amplicon.pool);
+            ampliconPointDataLabel.push(amplicon.amplicionUUID + "_"+  amplicon.ampliconNumber + '_LEFT');
+            //RPrimer
+            ampliconPointDataX.push(amplicon.stop);
+            ampliconPointDataY.push(amplicon.pool);
+            ampliconPointDataLabel.push(amplicon.amplicionUUID+ "_"+ amplicon.ampliconNumber+ '_RIGHT');
+        }
     
 
-            // Find the uncovered regions
-            // TODO
-
-            // Plot the data
-            // Plotly.newPlot('tester', ampliconData)
-            let ampliconData = {
-                x: ampliconPointDataX,
-                y: ampliconPointDataY,
-                type: 'scatter',
-                mode: "markers",
-                hovertemplate: "%{text}<extra></extra>",
-                text: ampliconPointDataLabel,
-                opacity:0,
-            };
-            let ampliconLayout = {
-                title: 'Amplicon Plot: ' + chromname,
+        // Find the uncovered regions
+        // TODO
+        // Plot the data
+        // Plotly.newPlot('tester', ampliconData)
+        let ampliconData = {
+            x: ampliconPointDataX,
+            y: ampliconPointDataY,
+            type: 'scatter',
+            mode: "markers",
+            hovertemplate: "%{text}<extra></extra>",
+            text: ampliconPointDataLabel,
+            opacity:0,
+        };
+        let ampliconLayout = {
+            title: 'Amplicon Plot: ' + chromname,
+            showline:true,
+            mirror:true,
+            ticks:"outside",
+            linewidth:2,
+            linecolor:"black",
+            tickformat:",d",
+            tickmode:"array",
+            title_font:{size:18, family:"Arial", color:"Black"},
+            xaxis: {
                 showline:true,
                 mirror:true,
                 ticks:"outside",
                 linewidth:2,
                 linecolor:"black",
                 tickformat:",d",
-                tickmode:"array",
                 title_font:{size:18, family:"Arial", color:"Black"},
-                xaxis: {
-                    showline:true,
-                    mirror:true,
-                    ticks:"outside",
-                    linewidth:2,
-                    linecolor:"black",
-                    tickformat:",d",
-                    title_font:{size:18, family:"Arial", color:"Black"},
-                    range:[0,length],
-                    title:"Position",
-                },
-                yaxis: {
-                    title: 'Pool',
-                    range: [0.5, npools+0.5],
-                    tickvals: pools,
-                    fixedrange:true,
-                    showline:true,
-                    mirror:true,
-                    ticks:"outside",
-                    linewidth:2,
-                    linecolor:"black",
-                    fixedrange:true,
-                    title_font:{size:18, family:"Arial", color:"Black"},
-
-                },
-                shapes: [...fPrimerLayout, ...rPrimerLayout, ...ampliconLineLayout]
-            }
-            let config = {responsive: true}
-
-            Plotly.newPlot( div, [ampliconData], ampliconLayout , config);
+                range:[0,length],
+                title:"Position",
+            },
+            yaxis: {
+                title: 'Pool',
+                range: [0.5, npools+0.5],
+                tickvals: pools,
+                fixedrange:true,
+                showline:true,
+                mirror:true,
+                ticks:"outside",
+                linewidth:2,
+                linecolor:"black",
+                fixedrange:true,
+                title_font:{size:18, family:"Arial", color:"Black"},
+            },
+            shapes: [...fPrimerLayout, ...rPrimerLayout, ...ampliconLineLayout]
+        }
+        let config = {responsive: true}
+        Plotly.newPlot( div, [ampliconData], ampliconLayout , config);
     }
 	// Log data to see if working
 	onMount(async function () {
@@ -147,10 +170,21 @@
 
         // Parse the 7 col bedfile data into primers
         let primerData = [];
+        let headerData = [];
         let lines = bedfileText.split('\n');
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
+            // Skip Header lines
+            if (line.startsWith('#')) {
+                headerData.push(line);
+                continue;
+            }
+
             let fields = line.split('\t');
+            // Skip empty lines
+            if (fields.length < 6) {
+                continue;
+            }
             let primer = {
                 chromname: fields[0],
                 start: parseInt(fields[1]),
@@ -158,7 +192,6 @@
                 primername: fields[3],
                 pool: parseInt(fields[4]),
                 strand: fields[5],
-                sequence: fields[6],
                 amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
             };
             primerData.push(primer);
