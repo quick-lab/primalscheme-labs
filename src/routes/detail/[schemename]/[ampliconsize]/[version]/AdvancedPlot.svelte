@@ -46,7 +46,7 @@
             // Get the amplicondata 
             let ampliconJsonData = plotData.amplicons;
             for (let [ampliconNumber, amplicon] of Object.entries(ampliconJsonData)) {
-                 // Make a not of all the pools
+                 // Make a note of all the pools
                 if (!pools.includes(amplicon.p)) {
                     pools.push(amplicon.p);
                     }
@@ -77,7 +77,33 @@
                 }
                 rPrimerLayout.push(rpLayout);
 
-                let ampliconLine = {
+
+                // Handle circular amplicons
+                if (amplicon.cs > amplicon.ce) {
+                    ampliconLineLayout.push({
+                        xaxis:"x",
+                        type: 'line',
+                        x0: 0,
+                        x1: amplicon.ce,
+                        y0: amplicon.p,
+                        y1: amplicon.p,
+                        line: {color:"LightSeaGreen", width:5
+                        }
+                    });
+                    ampliconLineLayout.push({
+                        xaxis:"x",
+                        type: 'line',
+                        x0: amplicon.cs,
+                        x1: length[1],
+                        y0: amplicon.p,
+                        y1: amplicon.p,
+                        line: {color:"LightSeaGreen", width:5
+                        }
+                    });
+                }
+                else {                
+                    // Handle linear amplicons
+                    let ampliconLine = {
                     xaxis:"x",
                     type: 'line',
                     x0: amplicon.cs,
@@ -87,7 +113,8 @@
                     line: {color:"LightSeaGreen", width:5
                     }
                 }
-                ampliconLineLayout.push(ampliconLine);
+                ampliconLineLayout.push(ampliconLine);}
+
                 // Add the points for the primers
                 // FPrimer
                 ampliconPointDataX.push(amplicon.s);

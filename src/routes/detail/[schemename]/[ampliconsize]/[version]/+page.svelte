@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from './AdvancedPlot.svelte';
+	import 'giscus';
 
 	export let data;
 
@@ -80,7 +81,10 @@
 	});
 </script>
 
-<h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2>
+<nav>
+	<ul><h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2></ul>
+	<ul><span class="pill {scheme.status}"><strong>{scheme.status}</strong></span></ul>
+</nav>
 
 {#if infoJsonError}
 	<dialog open>
@@ -140,13 +144,23 @@
 				<li><a href={scheme.primer_bed_url}>download</a></li>
 			</nav>
 		</header>
+		<!-- Write the bed file Header -->
+		{#each bedfile as bedline}
+			{#if bedline[0].startsWith('#')}
+				<pre>{bedline}</pre>
+			{/if}
+		{/each}
+
 		<table>
+			<!-- Write the bed file -->
 			{#each bedfile as bedline}
-				<tr>
-					{#each bedline as column}
-						<td>{column}</td>
-					{/each}
-				</tr>
+				{#if !bedline[0].startsWith('#')}
+					<tr>
+						{#each bedline as column}
+							<td>{column}</td>
+						{/each}
+					</tr>
+				{/if}
 			{/each}
 		</table>
 	</article>
@@ -178,7 +192,24 @@
 	</article>
 {/if}
 
+<giscus-widget
+	id="comments"
+	repo="quick-lab/primerschemes"
+	repoid="R_kgDOKTGGTw"
+	category="Announcements"
+	categoryid="DIC_kwDOKTGGT84CcWWD"
+	reactionsenabled="1"
+	emitmetadata="0"
+	inputposition="top"
+	theme="light"
+	lang="en"
+	loading="lazy"
+	term="{scheme.schemename}/{scheme.ampliconsize}/{scheme.schemeversion}"
+	mapping="specific"
+/>
+
 <style>
+	@import '$lib/assets/css/pills.css';
 	h2 {
 		margin-bottom: 0.4em;
 	}
