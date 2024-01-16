@@ -141,13 +141,23 @@
 				<li><a href={scheme.primer_bed_url}>download</a></li>
 			</nav>
 		</header>
+		<!-- Write the bed file Header -->
+		{#each bedfile as bedline}
+			{#if bedline[0].startsWith('#')}
+				<pre>{bedline}</pre>
+			{/if}
+		{/each}
+
 		<table>
+			<!-- Write the bed file -->
 			{#each bedfile as bedline}
-				<tr>
-					{#each bedline as column}
-						<td>{column}</td>
-					{/each}
-				</tr>
+				{#if !bedline[0].startsWith('#')}
+					<tr>
+						{#each bedline as column}
+							<td>{column}</td>
+						{/each}
+					</tr>
+				{/if}
 			{/each}
 		</table>
 	</article>
