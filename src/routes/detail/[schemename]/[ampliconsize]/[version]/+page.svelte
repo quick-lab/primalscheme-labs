@@ -81,7 +81,10 @@
 	});
 </script>
 
-<h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2>
+<nav>
+	<ul><h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2></ul>
+	<ul><span class="pill {scheme.status}"><strong>{scheme.status}</strong></span></ul>
+</nav>
 
 {#if infoJsonError}
 	<dialog open>
@@ -206,6 +209,7 @@
 />
 
 <style>
+	@import '$lib/assets/css/pills.css';
 	h2 {
 		margin-bottom: 0.4em;
 	}
