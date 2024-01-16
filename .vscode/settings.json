@@ -1,4 +1,4 @@
 {
-    "php.validate.executablePath": "",
-    "editor.formatOnSave": true
+	"php.validate.executablePath": "",
+	"editor.formatOnSave": true
 }

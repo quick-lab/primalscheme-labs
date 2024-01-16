@@ -1,271 +1,256 @@
 <script>
-    export let bedfileUrl;
-    export let hidden = false;
+	export let bedfileUrl;
+	export let hidden = false;
 
-    import {onMount} from 'svelte'
+	import { onMount } from 'svelte';
 
+	let bedfileText = false;
+	let loading = true;
 
-    let bedfileText = false;
-    let loading = true;
+	function generateDefaultPlot(amplicons, div, chromname, Plotly, pools, length) {
+		let npools = Math.max(...pools);
 
-    
-    function generateDefaultPlot(amplicons, div, chromname, Plotly, pools, length) {
-        let npools = Math.max(...pools);
-            
-        // Work out the number of pools
-        let fPrimerLayout = []
-        let rPrimerLayout = []
-        let ampliconLineLayout = []
-        // Add the points for the primers
-        let ampliconPointDataX = []
-        let ampliconPointDataY = []
-        let ampliconPointDataLabel = []
-            
-        // Handle regualr amplicons    
-        for (var i = 0; i < amplicons.length; i++) {
-            let amplicon = amplicons[i];
-            let fpLayout = {
-                type: 'rect',
-                x0: amplicon.start,
-                x1: amplicon.coverageStart,
-                y0: amplicon.pool-0.05,
-                y1: amplicon.pool+0.05,
-                fillcolor:"LightSalmon",
-                line: {color:"LightSalmon", width:2
-                }
-            }
-            fPrimerLayout.push(fpLayout);
+		// Work out the number of pools
+		let fPrimerLayout = [];
+		let rPrimerLayout = [];
+		let ampliconLineLayout = [];
+		// Add the points for the primers
+		let ampliconPointDataX = [];
+		let ampliconPointDataY = [];
+		let ampliconPointDataLabel = [];
 
-            let rpLayout = {
-                type: 'rect',
-                x0: amplicon.coverageStop,
-                x1: amplicon.stop,
-                y0: amplicon.pool-0.05,
-                y1: amplicon.pool+0.05,
-                fillcolor:"LightSalmon",
-                line: {color:"LightSalmon", width:2
-                }
-            }
-            rPrimerLayout.push(rpLayout);
+		// Handle regualr amplicons
+		for (var i = 0; i < amplicons.length; i++) {
+			let amplicon = amplicons[i];
+			let fpLayout = {
+				type: 'rect',
+				x0: amplicon.start,
+				x1: amplicon.coverageStart,
+				y0: amplicon.pool - 0.05,
+				y1: amplicon.pool + 0.05,
+				fillcolor: 'LightSalmon',
+				line: { color: 'LightSalmon', width: 2 }
+			};
+			fPrimerLayout.push(fpLayout);
 
-            if (amplicon.coverageStart > amplicon.coverageStop) {
-                // Circular amplicon
-                let ampliconLineLeft = {
-                    type: 'line',
-                    x0: amplicon.coverageStart,
-                    x1: length,
-                    y0: amplicon.pool,
-                    y1: amplicon.pool,
-                    line: {color:"LightSeaGreen", width:5}
-                }
-                ampliconLineLayout.push(ampliconLineLeft);
-                let ampliconLineRight = {
-                    type: 'line',
-                    x0: 0,
-                    x1: amplicon.coverageStop,
-                    y0: amplicon.pool,
-                    y1: amplicon.pool,
-                    line: {color:"LightSeaGreen", width:5}
-                }
-                ampliconLineLayout.push(ampliconLineRight);
-            }
-            else {
-                // Linear amplicon
-                let ampliconLine = {
-                type: 'line',
-                x0: amplicon.coverageStart,
-                x1: amplicon.coverageStop,
-                y0: amplicon.pool,
-                y1: amplicon.pool,
-                line: {color:"LightSeaGreen", width:5}
-            }
-            ampliconLineLayout.push(ampliconLine);
-            }
+			let rpLayout = {
+				type: 'rect',
+				x0: amplicon.coverageStop,
+				x1: amplicon.stop,
+				y0: amplicon.pool - 0.05,
+				y1: amplicon.pool + 0.05,
+				fillcolor: 'LightSalmon',
+				line: { color: 'LightSalmon', width: 2 }
+			};
+			rPrimerLayout.push(rpLayout);
 
-            
-            
+			if (amplicon.coverageStart > amplicon.coverageStop) {
+				// Circular amplicon
+				let ampliconLineLeft = {
+					type: 'line',
+					x0: amplicon.coverageStart,
+					x1: length,
+					y0: amplicon.pool,
+					y1: amplicon.pool,
+					line: { color: 'LightSeaGreen', width: 5 }
+				};
+				ampliconLineLayout.push(ampliconLineLeft);
+				let ampliconLineRight = {
+					type: 'line',
+					x0: 0,
+					x1: amplicon.coverageStop,
+					y0: amplicon.pool,
+					y1: amplicon.pool,
+					line: { color: 'LightSeaGreen', width: 5 }
+				};
+				ampliconLineLayout.push(ampliconLineRight);
+			} else {
+				// Linear amplicon
+				let ampliconLine = {
+					type: 'line',
+					x0: amplicon.coverageStart,
+					x1: amplicon.coverageStop,
+					y0: amplicon.pool,
+					y1: amplicon.pool,
+					line: { color: 'LightSeaGreen', width: 5 }
+				};
+				ampliconLineLayout.push(ampliconLine);
+			}
 
-            // Add the points for the primers
-            // FPrimer
-            ampliconPointDataX.push(amplicon.start);
-            ampliconPointDataY.push(amplicon.pool);
-            ampliconPointDataLabel.push(amplicon.amplicionUUID + "_"+  amplicon.ampliconNumber + '_LEFT');
-            //RPrimer
-            ampliconPointDataX.push(amplicon.stop);
-            ampliconPointDataY.push(amplicon.pool);
-            ampliconPointDataLabel.push(amplicon.amplicionUUID+ "_"+ amplicon.ampliconNumber+ '_RIGHT');
-        }
-    
+			// Add the points for the primers
+			// FPrimer
+			ampliconPointDataX.push(amplicon.start);
+			ampliconPointDataY.push(amplicon.pool);
+			ampliconPointDataLabel.push(amplicon.amplicionUUID + '_' + amplicon.ampliconNumber + '_LEFT');
+			//RPrimer
+			ampliconPointDataX.push(amplicon.stop);
+			ampliconPointDataY.push(amplicon.pool);
+			ampliconPointDataLabel.push(
+				amplicon.amplicionUUID + '_' + amplicon.ampliconNumber + '_RIGHT'
+			);
+		}
 
-        // Find the uncovered regions
-        // TODO
-        // Plot the data
-        // Plotly.newPlot('tester', ampliconData)
-        let ampliconData = {
-            x: ampliconPointDataX,
-            y: ampliconPointDataY,
-            type: 'scatter',
-            mode: "markers",
-            hovertemplate: "%{text}<extra></extra>",
-            text: ampliconPointDataLabel,
-            opacity:0,
-        };
-        let ampliconLayout = {
-            title: 'Amplicon Plot: ' + chromname,
-            showline:true,
-            mirror:true,
-            ticks:"outside",
-            linewidth:2,
-            linecolor:"black",
-            tickformat:",d",
-            tickmode:"array",
-            title_font:{size:18, family:"Arial", color:"Black"},
-            xaxis: {
-                showline:true,
-                mirror:true,
-                ticks:"outside",
-                linewidth:2,
-                linecolor:"black",
-                tickformat:",d",
-                title_font:{size:18, family:"Arial", color:"Black"},
-                range:[0,length],
-                title:"Position",
-            },
-            yaxis: {
-                title: 'Pool',
-                range: [0.5, npools+0.5],
-                tickvals: pools,
-                fixedrange:true,
-                showline:true,
-                mirror:true,
-                ticks:"outside",
-                linewidth:2,
-                linecolor:"black",
-                fixedrange:true,
-                title_font:{size:18, family:"Arial", color:"Black"},
-            },
-            shapes: [...fPrimerLayout, ...rPrimerLayout, ...ampliconLineLayout]
-        }
-        let config = {responsive: true}
-        Plotly.newPlot( div, [ampliconData], ampliconLayout , config);
-    }
+		// Find the uncovered regions
+		// TODO
+		// Plot the data
+		// Plotly.newPlot('tester', ampliconData)
+		let ampliconData = {
+			x: ampliconPointDataX,
+			y: ampliconPointDataY,
+			type: 'scatter',
+			mode: 'markers',
+			hovertemplate: '%{text}<extra></extra>',
+			text: ampliconPointDataLabel,
+			opacity: 0
+		};
+		let ampliconLayout = {
+			title: 'Amplicon Plot: ' + chromname,
+			showline: true,
+			mirror: true,
+			ticks: 'outside',
+			linewidth: 2,
+			linecolor: 'black',
+			tickformat: ',d',
+			tickmode: 'array',
+			title_font: { size: 18, family: 'Arial', color: 'Black' },
+			xaxis: {
+				showline: true,
+				mirror: true,
+				ticks: 'outside',
+				linewidth: 2,
+				linecolor: 'black',
+				tickformat: ',d',
+				title_font: { size: 18, family: 'Arial', color: 'Black' },
+				range: [0, length],
+				title: 'Position'
+			},
+			yaxis: {
+				title: 'Pool',
+				range: [0.5, npools + 0.5],
+				tickvals: pools,
+				fixedrange: true,
+				showline: true,
+				mirror: true,
+				ticks: 'outside',
+				linewidth: 2,
+				linecolor: 'black',
+				fixedrange: true,
+				title_font: { size: 18, family: 'Arial', color: 'Black' }
+			},
+			shapes: [...fPrimerLayout, ...rPrimerLayout, ...ampliconLineLayout]
+		};
+		let config = { responsive: true };
+		Plotly.newPlot(div, [ampliconData], ampliconLayout, config);
+	}
 	// Log data to see if working
 	onMount(async function () {
-        // Load the bedfile
-        let Plotly = (await import('plotly.js-dist-min')).default;
-        let response;
-        
-        try {
-            response = await fetch(bedfileUrl);
-            console.log(response);
-        } catch (error) {
-            console.log(response);
-        }
-        
-        bedfileText  = await response.text();
+		// Load the bedfile
+		let Plotly = (await import('plotly.js-dist-min')).default;
+		let response;
 
-        // Determine the number of pools
-        let pools = [];
-        let length = 0;
+		try {
+			response = await fetch(bedfileUrl);
+			console.log(response);
+		} catch (error) {
+			console.log(response);
+		}
 
-        // Parse the 7 col bedfile data into primers
-        let primerData = [];
-        let headerData = [];
-        let lines = bedfileText.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i];
-            // Skip Header lines
-            if (line.startsWith('#')) {
-                headerData.push(line);
-                continue;
-            }
+		bedfileText = await response.text();
 
-            let fields = line.split('\t');
-            // Skip empty lines
-            if (fields.length < 6) {
-                continue;
-            }
-            let primer = {
-                chromname: fields[0],
-                start: parseInt(fields[1]),
-                stop: parseInt(fields[2]),
-                primername: fields[3],
-                pool: parseInt(fields[4]),
-                strand: fields[5],
-                amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
-            };
-            primerData.push(primer);
-            
-            // Make a not of all the pools
-            if (!pools.includes(primer.pool)) {
-                pools.push(primer.pool);
-            }
-            // Make a note of the length
-            if (primer.stop > length) {
-                length = primer.stop;
-            }
-        }
+		// Determine the number of pools
+		let pools = [];
+		let length = 0;
 
-        let chromnameToAmplicons = {};
+		// Parse the 7 col bedfile data into primers
+		let primerData = [];
+		let headerData = [];
+		let lines = bedfileText.split('\n');
+		for (let i = 0; i < lines.length; i++) {
+			let line = lines[i];
+			// Skip Header lines
+			if (line.startsWith('#')) {
+				headerData.push(line);
+				continue;
+			}
 
-        // Create each msa by grouping primers by chromname
-        let msaPrimers = Object.groupBy(primerData, ({chromname}) => chromname);
-        for (let chromname in msaPrimers) {
-            let msaData = msaPrimers[chromname];
-            // Create amplicons by combining primers by primernumber
-            let ampliconPrimers = Object.groupBy(msaData, ({amplicon_number}) => amplicon_number);
-            // Generate amplicon data
-            let msaAmplicons = [];
-            for (let ampliconNumber in ampliconPrimers) {
-                // Group primers by strand
-                let primerFR = Object.groupBy(ampliconPrimers[ampliconNumber], ({strand}) => strand);
+			let fields = line.split('\t');
+			// Skip empty lines
+			if (fields.length < 6) {
+				continue;
+			}
+			let primer = {
+				chromname: fields[0],
+				start: parseInt(fields[1]),
+				stop: parseInt(fields[2]),
+				primername: fields[3],
+				pool: parseInt(fields[4]),
+				strand: fields[5],
+				amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
+			};
+			primerData.push(primer);
 
-                let amplicon = {
-                    ampliconNumber: ampliconNumber,
-                    pool: primerFR['+'][0].pool,
-                    forwardPrimers: primerFR['+'],
-                    reversePrimers: primerFR['-'],
-                    start: Math.min(...primerFR['+'].map(({start}) => start)),
-                    stop: Math.max(...primerFR['-'].map(({stop}) => stop)),
-                    coverageStart: Math.min(...primerFR['+'].map(({stop}) => stop)),
-                    coverageStop: Math.max(...primerFR['-'].map(({start}) => start)),
-                    amplicionUUID: primerFR['+'][0].primername.split('_')[0]
-                }
-                msaAmplicons.push(amplicon);
-            }
-            chromnameToAmplicons[chromname] = msaAmplicons;
-        }
+			// Make a not of all the pools
+			if (!pools.includes(primer.pool)) {
+				pools.push(primer.pool);
+			}
+			// Make a note of the length
+			if (primer.stop > length) {
+				length = primer.stop;
+			}
+		}
 
+		let chromnameToAmplicons = {};
 
+		// Create each msa by grouping primers by chromname
+		let msaPrimers = Object.groupBy(primerData, ({ chromname }) => chromname);
+		for (let chromname in msaPrimers) {
+			let msaData = msaPrimers[chromname];
+			// Create amplicons by combining primers by primernumber
+			let ampliconPrimers = Object.groupBy(msaData, ({ amplicon_number }) => amplicon_number);
+			// Generate amplicon data
+			let msaAmplicons = [];
+			for (let ampliconNumber in ampliconPrimers) {
+				// Group primers by strand
+				let primerFR = Object.groupBy(ampliconPrimers[ampliconNumber], ({ strand }) => strand);
 
-        // For each msa create the plotly data
-        for (let chromname in chromnameToAmplicons) {
-            let amplicons = chromnameToAmplicons[chromname];
+				let amplicon = {
+					ampliconNumber: ampliconNumber,
+					pool: primerFR['+'][0].pool,
+					forwardPrimers: primerFR['+'],
+					reversePrimers: primerFR['-'],
+					start: Math.min(...primerFR['+'].map(({ start }) => start)),
+					stop: Math.max(...primerFR['-'].map(({ stop }) => stop)),
+					coverageStart: Math.min(...primerFR['+'].map(({ stop }) => stop)),
+					coverageStop: Math.max(...primerFR['-'].map(({ start }) => start)),
+					amplicionUUID: primerFR['+'][0].primername.split('_')[0]
+				};
+				msaAmplicons.push(amplicon);
+			}
+			chromnameToAmplicons[chromname] = msaAmplicons;
+		}
 
-            console.log(chromname)
-            
-            // Create a new div for the plots
-            let PlotdivElement = document.createElement("div");
-            PlotdivElement.id = chromname;
-            PlotdivElement.style.width = "100%";
-            PlotdivElement.style.height = "100%";
+		// For each msa create the plotly data
+		for (let chromname in chromnameToAmplicons) {
+			let amplicons = chromnameToAmplicons[chromname];
 
-            let plotBody = document.getElementById("defaultPlot");
-            plotBody.append(PlotdivElement);
-            
-            generateDefaultPlot(amplicons, plotBody, chromname, Plotly, pools, length);
+			console.log(chromname);
 
-            
-    }
-    loading = false;
+			// Create a new div for the plots
+			let PlotdivElement = document.createElement('div');
+			PlotdivElement.id = chromname;
+			PlotdivElement.style.width = '100%';
+			PlotdivElement.style.height = '100%';
 
+			let plotBody = document.getElementById('defaultPlot');
+			plotBody.append(PlotdivElement);
+
+			generateDefaultPlot(amplicons, plotBody, chromname, Plotly, pools, length);
+		}
+		loading = false;
 	});
-
 </script>
 
-
 {#if loading}
-    <button aria-busy="true">Loading basic plot…</button>    
+	<button aria-busy="true">Loading basic plot…</button>
 {/if}
-<div id="defaultPlot" hidden={hidden}></div>
-
+<div id="defaultPlot" {hidden} />

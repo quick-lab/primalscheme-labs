@@ -1,4 +1,3 @@
-
 export const flattenedSchemeIndex = (schemeIndex) => {
 	const flatSchemes = [];
 
@@ -17,5 +16,5 @@ export const flattenedSchemeIndex = (schemeIndex) => {
 			}
 		}
 	}
-	return flatSchemes
-}
+	return flatSchemes;
+};
