@@ -14,7 +14,7 @@
 
 	const fuseOptions = {
 		isCaseSensitive: false,
-		keys: ['schemeName', 'ampliconSize']
+		keys: ['schemename', 'ampliconsize']
 	};
 
 	export let data;
