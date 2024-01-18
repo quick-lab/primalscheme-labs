@@ -8,9 +8,6 @@ export const flattenedSchemeIndex = (schemeIndex) => {
 			for (const version in schemeKeyedByVersion) {
 				const scheme = schemeIndex.primerschemes[schemeName][size][version];
 				flatSchemes.push({
-					schemeName: schemeName,
-					ampliconSize: size,
-					versionNumber: version,
 					...scheme
 				});
 			}
