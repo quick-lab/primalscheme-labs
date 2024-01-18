@@ -52,12 +52,13 @@
 	let referenceData;
 
 	onMount(async function () {
+		console.log($page.params);
 		const flatSchemes = flattenedSchemeIndex(schemes);
 		scheme = flatSchemes.find((s) => {
 			return (
-				s.schemename === $page.url.searchParams.get('schemename') &&
-				s.ampliconsize === Number.parseInt($page.url.searchParams.get('ampliconsize')) &&
-				s.schemeversion === $page.url.searchParams.get('version')
+				s.schemename === $page.params.schemename &&
+				s.ampliconsize === Number.parseInt($page.params.ampliconsize) &&
+				s.schemeversion === $page.params.version
 			);
 		});
 		if (scheme === undefined) {

@@ -15,7 +15,7 @@
 		<ul>
 			<a
 				class="title"
-				href={`/detail/?q=${query}&schemename=${scheme.schemename}&ampliconsize=${scheme.ampliconsize}&version=${scheme.schemeversion}`}
+				href={`/detail/${scheme.schemename}/${scheme.ampliconsize}/${scheme.schemeversion}/?q=${query}`}
 				><strong>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</strong></a
 			>
 		</ul>
