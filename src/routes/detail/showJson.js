@@ -1,6 +1,4 @@
 export default function showDetails(scheme) {
-	console.log(scheme);
-
 	const ol = document.createElement('ol');
 
 	Object.keys(scheme).forEach((key) => {

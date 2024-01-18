@@ -150,7 +150,6 @@
 
 		try {
 			response = await fetch(bedfileUrl);
-			console.log(response);
 		} catch (error) {
 			console.log(response);
 		}
@@ -232,8 +231,6 @@
 		// For each msa create the plotly data
 		for (let chromname in chromnameToAmplicons) {
 			let amplicons = chromnameToAmplicons[chromname];
-
-			console.log(chromname);
 
 			// Create a new div for the plots
 			let PlotdivElement = document.createElement('div');

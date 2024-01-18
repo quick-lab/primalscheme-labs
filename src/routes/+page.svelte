@@ -2,7 +2,7 @@
 	import ResultsRow from './ResultsRow.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-
+	import { onMount } from 'svelte';
 	import schemes from '$lib/assets/schemes.json';
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 	import Fuse from 'fuse.js';
@@ -17,7 +17,12 @@
 		keys: ['schemename', 'ampliconsize']
 	};
 
-	export let data;
+	let query = '';
+	let pageNum = 1;
+	onMount(async function () {
+		query = $page.url.searchParams.get('q') || '';
+		pageNum = $page.url.searchParams.get('pageNum') || 1;
+	});
 
 	// Set the filter checkbox values
 	let showStatus = {
@@ -28,11 +33,6 @@
 		tested: true,
 		validated: true
 	};
-	// Wanted Status
-
-	let query = data.query;
-
-	let pageNum = data.pageNum; // set a page number
 
 	const fuse = new Fuse(flatSchemes, fuseOptions);
 	$: flatSearchResult = query.trim().length
