@@ -7,8 +7,10 @@
 
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from './AdvancedPlot.svelte';
-	import schemes from '$lib/assets/schemes.json';
 
+	let flatSchemes = undefined;
+	let schemesLoading = true;
+	let schemesErrored = false;
 	let scheme = undefined;
 	let schemeIsLoading = true;
 
@@ -52,8 +54,21 @@
 	let referenceData;
 
 	onMount(async function () {
-		console.log($page.params);
-		const flatSchemes = flattenedSchemeIndex(schemes);
+		// Load schemes
+		try {
+			const response = await fetch(
+				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json?token=GHSAT0AAAAAACNCOBUYYT5TX3KGXDHSVOQYZNKMMFA'
+			);
+			const schemes = await response.json();
+			flatSchemes = flattenedSchemeIndex(schemes);
+			schemesLoading = false;
+		} catch (err) {
+			console.log(err);
+			schemesLoading = false;
+			schemesErrored = true;
+			return;
+		}
+
 		scheme = flatSchemes.find((s) => {
 			return (
 				s.schemename === $page.params.schemename &&
@@ -61,9 +76,11 @@
 				s.schemeversion === $page.params.version
 			);
 		});
+
 		if (scheme === undefined) {
 			error(404, 'Not found');
 		}
+
 		// Load plotly
 		let Plotly = (await import('plotly.js-dist-min')).default;
 
@@ -97,7 +114,7 @@
 	});
 </script>
 
-{#if schemeIsLoading}
+{#if schemesLoading || schemeIsLoading}
 	<p aria-busy="true">Loading data...</p>
 {:else}
 	<nav>
