@@ -3,26 +3,23 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import schemes from '$lib/assets/schemes.json';
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 	import Fuse from 'fuse.js';
 	import '@picocss/pico';
 	import Pagination from './Pagination.svelte';
 
-	// Flatten the scheme
-	const flatSchemes = flattenedSchemeIndex(schemes);
+	let flatSchemes = undefined;
+	let schemesLoading = true;
+	let schemesErrored = false;
+	let query = '';
+	let pageNum = 1;
+	let fuse = undefined;
+	let onSubmit = () => {};
 
 	const fuseOptions = {
 		isCaseSensitive: false,
 		keys: ['schemename', 'ampliconsize']
 	};
-
-	let query = '';
-	let pageNum = 1;
-	onMount(async function () {
-		query = $page.url.searchParams.get('q') || '';
-		pageNum = $page.url.searchParams.get('pageNum') || 1;
-	});
 
 	// Set the filter checkbox values
 	let showStatus = {
@@ -34,10 +31,30 @@
 		validated: true
 	};
 
-	const fuse = new Fuse(flatSchemes, fuseOptions);
+	onMount(async function () {
+		query = $page.url.searchParams.get('q') || '';
+		pageNum = $page.url.searchParams.get('pageNum') || 1;
+
+		// Load schemes
+		try {
+			const response = await fetch(
+				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json?token=GHSAT0AAAAAACNCOBUYYT5TX3KGXDHSVOQYZNKMMFA'
+			);
+			const schemes = await response.json();
+			flatSchemes = flattenedSchemeIndex(schemes);
+			schemesLoading = false;
+		} catch (err) {
+			console.log(err);
+			schemesLoading = false;
+			schemesErrored = true;
+		}
+
+		fuse = new Fuse(flatSchemes, fuseOptions);
+	});
+
 	$: flatSearchResult = query.trim().length
-		? fuse.search(query)
-		: flatSchemes.map((item, index) => ({
+		? fuse?.search(query)
+		: flatSchemes?.map((item, index) => ({
 				item,
 				refIndex: index,
 				matches: [],
@@ -47,13 +64,13 @@
 	// Pages
 	const pageSize = 25;
 	$: pageIndex = pageNum - 1;
-	$: pageCount = Math.ceil(flatSearchResult.length / pageSize);
+	$: pageCount = Math.ceil(flatSearchResult?.length / pageSize);
 
-	$: filtFlatSearchResult = flatSearchResult.filter((item) => {
+	$: filtFlatSearchResult = flatSearchResult?.filter((item) => {
 		return showStatus[item.item.status];
 	});
 
-	$: searchResult = filtFlatSearchResult.slice(
+	$: searchResult = filtFlatSearchResult?.slice(
 		pageIndex * pageSize,
 		pageIndex * pageSize + pageSize
 	);
@@ -68,7 +85,7 @@
 		pageNum = pageCount;
 	}
 
-	let onSubmit = async () => {
+	onSubmit = async () => {
 		let navSearchQuery = $page.url.searchParams.get('q') || '';
 		let navPageNum = $page.url.searchParams.get('pageNum') || 1;
 
@@ -87,52 +104,51 @@
 	};
 </script>
 
-<h1>Schemes</h1>
-
-<h4>Search</h4>
-<form on:submit|preventDefault={onSubmit}>
-	<input type="text" bind:value={query} on:keyup={debouncedSubmit} />
-</form>
-
-<details>
-	<summary>Advanced Search</summary>
-	{#each Object.entries(showStatus) as [status, value]}
-		<label>
-			<input type="checkbox" bind:checked={showStatus[status]} />
-			Show {status}
-		</label>
-	{/each}
-</details>
-
-{#if searchResult.length > 0}
-	<table role="grid">
-		<!-- <tr>
-			<th>Scheme name</th>
-			<th>Amplicon size</th>
-			<th>Version</th>
-			<th>Status</th>
-		</tr> -->
-		<hr />
-		{#each searchResult as result}
-			<ResultsRow scheme={result.item} {query} />
-		{/each}
-	</table>
+{#if schemesLoading}
+	<p aria-busy="true">Loading data...</p>
+{:else if schemesErrored}
+	<p>Unable to load schemes data...</p>
 {:else}
-	<p>No results</p>
-{/if}
-<Pagination
-	{pageCount}
-	{pageNum}
-	resultCount={flatSearchResult.length}
-	pageSize={searchResult.length}
-	{query}
-/>
+	<h1>Schemes</h1>
 
-<style>
-	details {
-		color: #00444d;
-	}
-	label:hover {
-		color: #810081;
-	}
-</style>
+	<h4>Search</h4>
+	<form on:submit|preventDefault={onSubmit}>
+		<input type="text" bind:value={query} on:keyup={debouncedSubmit} />
+	</form>
+
+	<details>
+		<summary>Advanced Search</summary>
+		{#each Object.entries(showStatus) as [status, value]}
+			<label>
+				<input type="checkbox" bind:checked={showStatus[status]} />
+				Show {status}
+			</label>
+		{/each}
+	</details>
+
+	{#if searchResult.length > 0}
+		<table role="grid">
+			{#each searchResult as result}
+				<ResultsRow scheme={result.item} {query} />
+			{/each}
+		</table>
+	{:else}
+		<p>No results</p>
+	{/if}
+	<Pagination
+		{pageCount}
+		{pageNum}
+		resultCount={flatSearchResult.length}
+		pageSize={searchResult.length}
+		{query}
+	/>
+
+	<style>
+		details {
+			color: #00444d;
+		}
+		label:hover {
+			color: #810081;
+		}
+	</style>
+{/if}
