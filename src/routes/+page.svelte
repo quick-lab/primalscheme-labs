@@ -95,8 +95,8 @@
 
 		await goto(
 			query.trim().length
-				? `/?q=${encodeURIComponent(query.trim())}&pageNum=${pageNum}`
-				: `/?pageNum=${pageNum}`,
+				? `${base}/?q=${encodeURIComponent(query.trim())}&pageNum=${pageNum}`
+				: `${base}/?pageNum=${pageNum}`,
 			{
 				keepFocus: true
 			}
