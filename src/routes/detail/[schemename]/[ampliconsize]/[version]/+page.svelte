@@ -1,57 +1,60 @@
 <script>
-	import 'giscus';
 	import { onMount } from 'svelte';
-	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 	import { error } from '@sveltejs/kit';
 	import { page } from '$app/stores';
+	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
+
+	import 'giscus';
 
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from './AdvancedPlot.svelte';
 
+	/*
+	// Initial state
+	*/
+	// Schemes
 	let flatSchemes = undefined;
-	let schemesLoading = true;
 	let schemesErrored = false;
+
+	// Scheme
 	let scheme = undefined;
-	let schemeIsLoading = true;
+	let schemeLoading = true;
 
-	let advancedPlotIsLoaded = false;
+	// Advanced Plot
+	let showingAdvancedPlot = false;
 
-	function handleAdvLoaded() {
-		advancedPlotIsLoaded = true;
-	}
+	// Reference
+	let reference = undefined;
+	let referenceLoading = false;
+	let referenceErrored = false;
+	let showingReference = false;
 
-	async function handleReferenceClick() {
-		referenceNotClicked = false;
+	// Info.json
+	let info = undefined;
+	let infoLoading = true;
+	let infoErrored = false;
+
+	// Bedfile
+	let bedfile = undefined;
+	let bedfileErrored = false;
+	let bedfileLoading = true;
+
+	// Algo
+	let primalschemeMajorVersion = undefined;
+
+	async function loadReference() {
 		referenceLoading = true;
-
-		// Load the reference
 		try {
-			let referenceResponce = await fetch(scheme.reference_fasta_url);
-			referenceData = await referenceResponce.text();
+			let response = await fetch(scheme.reference_fasta_url);
+			reference = await response.text();
+			showingReference = true;
+		} catch (err) {
+			console.error(err);
+			referenceErrored = true;
+		} finally {
 			referenceLoading = false;
-			referenceError = false;
-		} catch (e) {
-			console.error(e);
-			referenceLoading = false;
-			referenceError = true;
 		}
 	}
-
-	// Info.json state
-	let loadingInfoJson = true;
-	let infoJsonError = false;
-	let info = undefined;
-
-	// Bedfile state
-	let bedFileError = false;
-	let loadingBedfile = true;
-	let bedfile = undefined;
-
-	// Reference state
-	let referenceNotClicked = true;
-	let referenceLoading = false;
-	let referenceError = false;
-	let referenceData;
 
 	onMount(async function () {
 		// Load schemes
@@ -61,14 +64,13 @@
 			);
 			const schemes = await response.json();
 			flatSchemes = flattenedSchemeIndex(schemes);
-			schemesLoading = false;
 		} catch (err) {
 			console.log(err);
-			schemesLoading = false;
 			schemesErrored = true;
 			return;
 		}
 
+		// Find this scheme
 		scheme = flatSchemes.find((s) => {
 			return (
 				s.schemename === $page.params.schemename &&
@@ -79,57 +81,61 @@
 
 		if (scheme === undefined) {
 			error(404, 'Not found');
+		} else {
+			schemeLoading = false;
 		}
 
-		// Load plotly
-		let Plotly = (await import('plotly.js-dist-min')).default;
-
-		// Load the info.json
+		// Load info.json
 		try {
 			const response = await fetch(scheme.info_json_url);
-			let infoJson = await response.json();
-			info = infoJson;
-			loadingInfoJson = false;
-		} catch (e) {
-			console.error(e);
-			infoJsonError = true;
+			info = await response.json();
+		} catch (err) {
+			console.error(err);
+			infoErrored = true;
+		} finally {
+			infoLoading = false;
 		}
 
-		// Load the primer.bed
+		// Primalscheme major version
+		const algoStr = info.algorithmversion;
+		const algoMatchResult = algoStr.match(/primalscheme(\d+):/);
+		primalschemeMajorVersion = algoMatchResult ? algoMatchResult[1] : null;
+
+		// Load bedfile
 		try {
-			let bedfileResponce = await fetch(scheme.primer_bed_url);
-			bedfile = await bedfileResponce.text().then((text) =>
-				text
-					.trim()
-					.split('\n')
-					.map((bedline) => bedline.split('\t'))
-			);
+			let response = await fetch(scheme.primer_bed_url);
+			bedfile = await response.text();
 
-			loadingBedfile = false;
-		} catch (e) {
-			console.error(e);
-			bedFileError = true;
+			bedfile = bedfile
+				.trim()
+				.split('\n')
+				.map((bedline) => bedline.split('\t'));
+		} catch (err) {
+			console.error(err);
+			bedfileErrored = true;
+		} finally {
+			bedfileLoading = false;
 		}
-		schemeIsLoading = false;
 	});
 </script>
 
-{#if schemesLoading || schemeIsLoading}
+{#if schemeLoading || infoLoading || bedfileLoading}
 	<p aria-busy="true">Loading data...</p>
+{:else if schemesErrored || infoErrored || bedfileErrored || referenceErrored}
+	<dialog open>
+		<article>
+			<header>Error</header>
+
+			<p>Unable to load scheme data.</p>
+		</article>
+	</dialog>
 {:else}
 	<nav>
 		<ul><h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2></ul>
 		<ul><span class="pill {scheme.status}"><strong>{scheme.status}</strong></span></ul>
 	</nav>
 
-	{#if infoJsonError}
-		<dialog open>
-			<article>
-				<h2>Error</h2>
-				<p>There was an error loading the data. Please go back.</p>
-			</article>
-		</dialog>
-	{:else if loadingInfoJson}
+	{#if infoLoading}
 		<p aria-busy="true">Loading data...</p>
 	{:else}
 		{#if info.description}
@@ -138,95 +144,80 @@
 
 		<article>
 			<header>Scheme Overview</header>
-			<AmpliconPlot hidden={advancedPlotIsLoaded} bedfileUrl={scheme.primer_bed_url} />
-			<AdvancedPlot on:loaded={handleAdvLoaded} bedfileUrl={scheme.primer_bed_url} />
+			<AmpliconPlot hidden={showingAdvancedPlot} bedfileUrl={scheme.primer_bed_url} />
+			{#if primalschemeMajorVersion >= 3}
+				<AdvancedPlot
+					on:loaded={() => (showingAdvancedPlot = true)}
+					bedfileUrl={scheme.primer_bed_url}
+				/>
+			{/if}
 		</article>
 	{/if}
 
 	<h2>Scheme Details</h2>
-	{#if loadingInfoJson}
-		<p aria-busy="true">Loading data...</p>
-	{:else if infoJsonError}
-		<p>Error loading data</p>
-	{:else}
-		<article>
-			<header>
-				<nav>
-					<li><strong>info?.json</strong></li>
-					<li><a href={scheme.info_json_url}>download</a></li>
-				</nav>
-			</header>
-			<table>
-				{#each Object.keys(info) as key}
-					<tr>
-						<td><b>{key}:</b></td>
-						<td> {info[key]}</td>
-					</tr>
-				{/each}
-			</table>
-		</article>
-	{/if}
+	<article>
+		<header>
+			<nav>
+				<li><strong>info.json</strong></li>
+				<li><a href={scheme.info_json_url} download>download</a></li>
+			</nav>
+		</header>
+		<table>
+			{#each Object.keys(info) as key}
+				<tr>
+					<td><b>{key}:</b></td>
+					<td> {info[key]}</td>
+				</tr>
+			{/each}
+		</table>
+	</article>
 
 	<h2>Bedfile</h2>
-	{#if bedFileError}
-		<p>Error loading bedfile</p>
-	{:else if loadingBedfile}
-		<p aria-busy="true">Loading bedfile...</p>
-	{:else}
-		<article>
-			<header>
-				<nav>
-					<li><strong>primer.bed</strong></li>
-					<li><a href={scheme.primer_bed_url}>download</a></li>
-				</nav>
-			</header>
-			<!-- Write the bed file Header -->
+
+	<article>
+		<header>
+			<nav>
+				<li><strong>primer.bed</strong></li>
+				<li><a href={scheme.primer_bed_url} download>download</a></li>
+			</nav>
+		</header>
+		<!-- Write the bed file Header -->
+		{#each bedfile as bedline}
+			{#if bedline[0].startsWith('#')}
+				<pre>{bedline}</pre>
+			{/if}
+		{/each}
+
+		<table>
+			<!-- Write the bed file -->
 			{#each bedfile as bedline}
-				{#if bedline[0].startsWith('#')}
-					<pre>{bedline}</pre>
+				{#if !bedline[0].startsWith('#')}
+					<tr>
+						{#each bedline as column}
+							<td>{column}</td>
+						{/each}
+					</tr>
 				{/if}
 			{/each}
-
-			<table>
-				<!-- Write the bed file -->
-				{#each bedfile as bedline}
-					{#if !bedline[0].startsWith('#')}
-						<tr>
-							{#each bedline as column}
-								<td>{column}</td>
-							{/each}
-						</tr>
-					{/if}
-				{/each}
-			</table>
-		</article>
-	{/if}
+		</table>
+	</article>
 
 	<h2>Reference</h2>
-	{#if loadingInfoJson}
-		<p aria-busy="true">Loading data...</p>
-	{:else if infoJsonError}
-		<p>Error loading data</p>
-	{:else}
-		<article>
-			<header>
-				<nav>
-					<li><strong>reference.fasta</strong></li>
-					<li><a href={scheme.reference_fasta_url}>download</a></li>
-				</nav>
-			</header>
-			{#if referenceNotClicked}
-				<p>Click the button below to load the reference.</p>
-				<a on:click={handleReferenceClick}>Load reference</a>
-			{:else if referenceLoading}
-				<p aria-busy="true">Loading reference...</p>
-			{:else if referenceError}
-				<p>Error loading reference</p>
-			{:else}
-				<pre>{referenceData}</pre>
-			{/if}
-		</article>
-	{/if}
+	<article>
+		<header>
+			<nav>
+				<li><strong>reference.fasta</strong></li>
+				<li><a href={scheme.reference_fasta_url} download>download</a></li>
+			</nav>
+		</header>
+		{#if !showingReference}
+			<a on:click={loadReference}>Load reference</a>
+		{:else if referenceLoading}
+			<p aria-busy="true">Loading reference...</p>
+		{:else}
+			<pre>{reference}</pre>
+		{/if}
+	</article>
 
 	<giscus-widget
 		id="comments"
