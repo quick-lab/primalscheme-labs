@@ -5,6 +5,8 @@
 	export let pageSize;
 	export let query;
 
+	import { base } from '$app/paths';
+
 	$: queryStr = query.trim().length ? `/?q=${encodeURIComponent(query.trim())}&` : '/?';
 </script>
 
@@ -13,7 +15,7 @@
 	<ul>
 		{#each Array(pageCount) as _, i}
 			<li>
-				<a class:active={i + 1 == pageNum} href="{queryStr}pageNum={i + 1}">{i + 1}</a>
+				<a class:active={i + 1 == pageNum} href="{base}/{queryStr}pageNum={i + 1}">{i + 1}</a>
 			</li>
 		{/each}
 	</ul>

@@ -1,6 +1,8 @@
 <script>
 	export let scheme;
 	export let query;
+
+	import { base } from '$app/paths';
 </script>
 
 <!-- <tr>
@@ -15,7 +17,7 @@
 		<ul>
 			<a
 				class="title"
-				href={`/detail/${scheme.schemename}/${scheme.ampliconsize}/${scheme.schemeversion}/?q=${query}`}
+				href={`${base}/detail/${scheme.schemename}/${scheme.ampliconsize}/${scheme.schemeversion}/?q=${query}`}
 				><strong>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</strong></a
 			>
 		</ul>

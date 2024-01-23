@@ -2,21 +2,22 @@
 	import '@picocss/pico';
 	import articLogo from '$lib/assets/img/artic-logo.svg';
 	import gitHubLogo from '$lib/assets/img/github-mark.svg';
+	import { base } from '$app/paths';
 </script>
 
 <nav data-sveltekit-reload>
 	<ul>
 		<li class="logo">
-			<a href="/">
+			<a href="{base}/">
 				<img src={articLogo} alt="triangle with all three sides equal" />
 				<strong>PrimalSchemes</strong>
 			</a>
 		</li>
 	</ul>
 	<ul>
-		<li><a href="/">New Search</a></li>
-		<li><a href="/faqs">FAQs</a></li>
-		<li><a href="/about">About</a></li>
+		<li><a href={base}>New Search</a></li>
+		<li><a href="{base}/faqs">FAQs</a></li>
+		<li><a href="{base}/about">About</a></li>
 	</ul>
 </nav>
 
