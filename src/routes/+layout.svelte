@@ -1,6 +1,6 @@
 <script>
 	import '@picocss/pico';
-	import articLogo from '$lib/assets/img/artic-logo.svg';
+	import primalLogo from '$lib/assets/img/primal-logo.png';
 	import gitHubLogo from '$lib/assets/img/github-mark.svg';
 	import { base } from '$app/paths';
 </script>
@@ -9,7 +9,7 @@
 	<ul>
 		<li class="logo">
 			<a href="{base}/">
-				<img src={articLogo} alt="triangle with all three sides equal" />
+				<img src={primalLogo} alt="triangle with all three sides equal" />
 				<strong>PrimalSchemes</strong>
 			</a>
 		</li>
@@ -61,7 +61,6 @@
 <!-- 00444D -->
 
 <style>
-	.logo,
 	li a {
 		color: rgb(255, 254, 247);
 	}

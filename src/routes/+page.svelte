@@ -112,28 +112,29 @@
 {:else if schemesErrored}
 	<p>Unable to load schemes data...</p>
 {:else}
-	<h1>Schemes</h1>
+	<form id="search form" on:submit|preventDefault={onSubmit}>
+		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
 
-	<h4>Search</h4>
-	<form on:submit|preventDefault={onSubmit}>
-		<input type="text" bind:value={query} on:keyup={debouncedSubmit} />
+		<details>
+			<summary>Advanced Search</summary>
+			{#each Object.entries(showStatus) as [status, value]}
+				<label>
+					<input type="checkbox" role="switch" bind:checked={showStatus[status]} />
+					Show {status}
+				</label>
+			{/each}
+		</details>
 	</form>
 
-	<details>
-		<summary>Advanced Search</summary>
-		{#each Object.entries(showStatus) as [status, value]}
-			<label>
-				<input type="checkbox" bind:checked={showStatus[status]} />
-				Show {status}
-			</label>
-		{/each}
-	</details>
+	<hr />
 
 	{#if searchResult.length > 0}
 		<table role="grid">
-			{#each searchResult as result}
-				<ResultsRow scheme={result.item} {query} />
-			{/each}
+			<tbody>
+				{#each searchResult as result}
+					<ResultsRow scheme={result.item} {query} />
+				{/each}
+			</tbody>
 		</table>
 	{:else}
 		<p>No results</p>
@@ -145,13 +146,18 @@
 		pageSize={searchResult.length}
 		{query}
 	/>
-
-	<style>
-		details {
-			color: #00444d;
-		}
-		label:hover {
-			color: #810081;
-		}
-	</style>
 {/if}
+
+<style>
+	form {
+		margin-top: 2em;
+		margin-bottom: 2em;
+	}
+
+	details {
+		color: #00444d;
+	}
+	label:hover {
+		color: #810081;
+	}
+</style>
