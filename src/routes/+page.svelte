@@ -4,10 +4,13 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
-	import Fuse from 'fuse.js';
+
 	import '@picocss/pico';
+	import Fuse from 'fuse.js';
+
 	import Pagination from './Pagination.svelte';
 
+	// Initial state
 	let flatSchemes = undefined;
 	let schemesLoading = true;
 	let schemesErrored = false;
@@ -42,11 +45,11 @@
 			);
 			const schemes = await response.json();
 			flatSchemes = flattenedSchemeIndex(schemes);
-			schemesLoading = false;
 		} catch (err) {
 			console.log(err);
-			schemesLoading = false;
 			schemesErrored = true;
+		} finally {
+			schemesLoading = false;
 		}
 
 		fuse = new Fuse(flatSchemes, fuseOptions);
