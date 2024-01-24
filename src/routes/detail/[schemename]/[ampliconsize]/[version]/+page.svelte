@@ -278,4 +278,8 @@
 		margin-bottom: 2em;
 		border-bottom: 1px solid rgb(115, 130, 140);
 	}
+
+	p[aria-busy='true'] {
+		margin-bottom: 1em;
+	}
 </style>
