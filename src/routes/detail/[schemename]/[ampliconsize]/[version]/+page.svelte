@@ -212,7 +212,7 @@
 		</header>
 
 		{#if !showingReference}
-			<a href="#" on:click={loadReference}>Show reference</a>
+			<button on:click={loadReference}>Show reference</button>
 		{:else if referenceLoading}
 			<p aria-busy="true">Loading reference...</p>
 		{:else}
