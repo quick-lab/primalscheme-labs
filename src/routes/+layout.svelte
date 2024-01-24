@@ -16,6 +16,7 @@
 	</ul>
 	<ul>
 		<li><a href="{base}/">New Search</a></li>
+		<li><a href="https://primalscheme.com">Create Scheme</a></li>
 		<li><a href="{base}/faqs">FAQs</a></li>
 		<li><a href="{base}/about">About</a></li>
 	</ul>
