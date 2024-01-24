@@ -78,5 +78,4 @@
 
 <style>
 	@import '$lib/assets/css/pills.css';
-	@import '$lib/assets/css/article.css';
 </style>

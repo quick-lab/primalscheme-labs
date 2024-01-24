@@ -63,7 +63,7 @@
 		text-decoration: none;
 	}
 	.logo img {
-		height: 50px;
+		height: 70px;
 		margin-right: 10px;
 	}
 	p {
