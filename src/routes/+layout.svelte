@@ -23,42 +23,33 @@
 
 <main class="container"><slot /></main>
 
-<aside>
-	<body class="footer">
-		<ul>
-			<p>
-				PrimalSchemes is a project by <a href="https://artic.network">ARTIC Network</a> and Quick
-				Lab
-				<a href="https://github.com/quick-lab"
-					><img class="gitlogo" src={gitHubLogo} alt="Github logo" /></a
-				>
-			</p>
-		</ul>
-		<ul>
-			<p xmlns:cc="http://creativecommons.org/ns#">
-				Unless stated otherwise all work is licensed under <a
-					href="http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1"
-					target="_blank"
-					rel="license noopener noreferrer"
-					style="display:inline-block;"
-					>CC BY-SA 4.0<img
-						style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
-						src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"
-					/><img
-						style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
-						src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"
-					/><img
-						style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
-						src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"
-					/></a
-				>
-			</p>
-		</ul>
-	</body>
-</aside>
+<footer>
+	<p>
+		PrimalSchemes is a project by <a href="https://artic.network">ARTIC Network</a> and Quick Lab
+		<a href="https://github.com/quick-lab"
+			><img class="gitlogo" src={gitHubLogo} alt="Github logo" /></a
+		>
+	</p>
 
-<!-- 0, 68, 77 -->
-<!-- 00444D -->
+	<p xmlns:cc="http://creativecommons.org/ns#">
+		Unless stated otherwise all work is licensed under <a
+			href="http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1"
+			target="_blank"
+			rel="license noopener noreferrer"
+			style="display:inline-block;"
+			>CC BY-SA 4.0<img
+				style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
+				src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"
+			/><img
+				style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
+				src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"
+			/><img
+				style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
+				src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"
+			/></a
+		>
+	</p>
+</footer>
 
 <style>
 	li a {
@@ -90,17 +81,12 @@
 		padding: 0;
 		margin: 0 20px;
 	}
-	body.footer {
-		background-color: white;
-		color: white;
-		/* margin-top: 100px; */
-		border-top: 1px solid rgb(115, 130, 140);
+	footer {
+		margin-top: 2em;
+		border-top: 1px solid rgb(196, 196, 196);
+		padding: 1em 0;
 	}
 	.gitlogo {
 		height: 22px;
-	}
-	aside {
-		margin-top: 20px;
-		padding: 20px;
 	}
 </style>

@@ -129,7 +129,7 @@
 	<hr />
 
 	{#if searchResult.length > 0}
-		<table role="grid">
+		<table class="striped">
 			<tbody>
 				{#each searchResult as result}
 					<ResultsRow scheme={result.item} {query} />

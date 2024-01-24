@@ -130,10 +130,10 @@
 		</article>
 	</dialog>
 {:else}
-	<nav>
-		<ul><h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2></ul>
-		<ul><span class="pill {scheme.status}"><strong>{scheme.status}</strong></span></ul>
-	</nav>
+	<div class="grid level">
+		<h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2>
+		<span class="pill {scheme.status}"><strong>{scheme.status}</strong></span>
+	</div>
 
 	{#if infoLoading}
 		<p aria-busy="true">Loading data...</p>
@@ -156,32 +156,26 @@
 
 	<h2>Scheme Details</h2>
 	<article>
-		<header>
-			<nav>
-				<li><strong>info.json</strong></li>
-				<li><a href={scheme.info_json_url} download>download</a></li>
-			</nav>
+		<header class="grid level">
+			<div><strong>info.json</strong></div>
+			<div><a href={scheme.info_json_url} download>download</a></div>
 		</header>
 		<table>
 			{#each Object.keys(info) as key}
 				<tr>
-					<td><b>{key}:</b></td>
-					<td> {info[key]}</td>
+					<th scope="row">{key}:</th>
+					<td>{info[key]}</td>
 				</tr>
 			{/each}
 		</table>
 	</article>
 
-	<h2>Bedfile</h2>
-
 	<article>
-		<header>
-			<nav>
-				<li><strong>primer.bed</strong></li>
-				<li><a href={scheme.primer_bed_url} download>download</a></li>
-			</nav>
+		<header class="grid level">
+			<div><strong>primer.bed</strong></div>
+			<div><a href={scheme.primer_bed_url} download>download</a></div>
 		</header>
-		<!-- Write the bed file Header -->
+
 		{#each bedfile as bedline}
 			{#if bedline[0].startsWith('#')}
 				<pre>{bedline}</pre>
@@ -202,16 +196,14 @@
 		</table>
 	</article>
 
-	<h2>Reference</h2>
 	<article>
-		<header>
-			<nav>
-				<li><strong>reference.fasta</strong></li>
-				<li><a href={scheme.reference_fasta_url} download>download</a></li>
-			</nav>
+		<header class="grid level">
+			<div><strong>reference.fasta</strong></div>
+			<div><a href={scheme.reference_fasta_url} download>download</a></div>
 		</header>
+
 		{#if !showingReference}
-			<a on:click={loadReference}>Load reference</a>
+			<a on:click={loadReference}>Show reference</a>
 		{:else if referenceLoading}
 			<p aria-busy="true">Loading reference...</p>
 		{:else}
@@ -238,13 +230,19 @@
 
 <style>
 	@import '$lib/assets/css/pills.css';
-	h2 {
-		margin-bottom: 0.4em;
+	.level {
+		grid-template-columns: 1fr auto;
+		margin-bottom: 2em;
 	}
-	td {
+	td,
+	th {
 		border: none;
 		margin-bottom: 0em;
 		line-height: 0.5em;
+	}
+
+	th {
+		font-weight: bold;
 	}
 	.dropdown {
 		background-color: #00444d;
