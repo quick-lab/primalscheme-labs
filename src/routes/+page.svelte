@@ -69,11 +69,11 @@
 	$: pageIndex = pageNum - 1;
 	$: pageCount = Math.ceil(flatSearchResult?.length / pageSize);
 
-	$: filtFlatSearchResult = flatSearchResult?.filter((item) => {
+	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
 		return showStatus[item.item.status];
 	});
 
-	$: searchResult = filtFlatSearchResult?.slice(
+	$: searchResult = filteredFlatSearchResult?.slice(
 		pageIndex * pageSize,
 		pageIndex * pageSize + pageSize
 	);

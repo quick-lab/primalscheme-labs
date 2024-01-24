@@ -144,12 +144,17 @@
 
 		<article>
 			<header>Scheme Overview</header>
-			<AmpliconPlot hidden={showingAdvancedPlot} bedfileUrl={scheme.primer_bed_url} />
+			<figure>
+				<AmpliconPlot hidden={showingAdvancedPlot} bedfileUrl={scheme.primer_bed_url} />
+			</figure>
+
 			{#if primalschemeMajorVersion >= 3}
-				<AdvancedPlot
-					on:loaded={() => (showingAdvancedPlot = true)}
-					bedfileUrl={scheme.primer_bed_url}
-				/>
+				<figure>
+					<AdvancedPlot
+						on:loaded={() => (showingAdvancedPlot = true)}
+						bedfileUrl={scheme.primer_bed_url}
+					/>
+				</figure>
 			{/if}
 		</article>
 	{/if}
@@ -160,14 +165,16 @@
 			<div><strong>info.json</strong></div>
 			<div><a href={scheme.info_json_url} download>download</a></div>
 		</header>
-		<table>
-			{#each Object.keys(info) as key}
-				<tr>
-					<th scope="row">{key}:</th>
-					<td>{info[key]}</td>
-				</tr>
-			{/each}
-		</table>
+		<figure>
+			<table>
+				{#each Object.keys(info) as key}
+					<tr>
+						<th scope="row">{key}:</th>
+						<td>{info[key]}</td>
+					</tr>
+				{/each}
+			</table>
+		</figure>
 	</article>
 
 	<article>
@@ -182,18 +189,20 @@
 			{/if}
 		{/each}
 
-		<table>
-			<!-- Write the bed file -->
-			{#each bedfile as bedline}
-				{#if !bedline[0].startsWith('#')}
-					<tr>
-						{#each bedline as column}
-							<td>{column}</td>
-						{/each}
-					</tr>
-				{/if}
-			{/each}
-		</table>
+		<figure>
+			<table>
+				<!-- Write the bed file -->
+				{#each bedfile as bedline}
+					{#if !bedline[0].startsWith('#')}
+						<tr>
+							{#each bedline as column}
+								<td>{column}</td>
+							{/each}
+						</tr>
+					{/if}
+				{/each}
+			</table>
+		</figure>
 	</article>
 
 	<article>
@@ -203,7 +212,7 @@
 		</header>
 
 		{#if !showingReference}
-			<a on:click={loadReference}>Show reference</a>
+			<a href="#" on:click={loadReference}>Show reference</a>
 		{:else if referenceLoading}
 			<p aria-busy="true">Loading reference...</p>
 		{:else}
@@ -239,6 +248,11 @@
 		border: none;
 		margin-bottom: 0em;
 		line-height: 0.5em;
+	}
+
+	figure td,
+	figure th {
+		white-space: nowrap;
 	}
 
 	th {

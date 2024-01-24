@@ -39,12 +39,15 @@
 			rel="license noopener noreferrer"
 			style="display:inline-block;"
 			>CC BY-SA 4.0<img
+				alt="Creative Commons Logo"
 				style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
 				src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"
 			/><img
+				alt="Creative Commons Logo"
 				style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
 				src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"
 			/><img
+				alt="Creative Commons Logo"
 				style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"
 				src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"
 			/></a

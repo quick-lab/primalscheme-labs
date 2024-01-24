@@ -37,7 +37,7 @@
 				<li><span class="pill draft"><b>draft</b></span></li>
 				<li>
 					This is a curated scheme, however has not undergone any testing. We hope schemes will
-					either progress to tested/valdated or deprecated/withdrawn
+					either progress to tested/validated or deprecated/withdrawn
 				</li>
 			</ul>
 		</nav>

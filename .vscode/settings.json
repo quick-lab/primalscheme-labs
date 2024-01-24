@@ -1,5 +1,35 @@
 {
 	"php.validate.executablePath": "",
 	"editor.formatOnSave": true,
-	"cSpell.words": ["Amplicon", "ampliconsize", "bedline", "fasta", "schemename", "schemeversion"]
+	"cSpell.words": [
+		"algorithmversion",
+		"Amplicon",
+		"ampliconsize",
+		"ARTIC",
+		"bccdc",
+		"bedfile",
+		"Bedfile",
+		"bedline",
+		"categoryid",
+		"DOKTGG",
+		"DOKTGGT",
+		"emitmetadata",
+		"fasta",
+		"giscus",
+		"gitlogo",
+		"inputposition",
+		"norovirus",
+		"pico",
+		"picocss",
+		"precompress",
+		"primaldigest",
+		"primalscheme",
+		"Primalscheme",
+		"primerclass",
+		"primerschemes",
+		"reactionsenabled",
+		"repoid",
+		"schemename",
+		"schemeversion"
+	]
 }
