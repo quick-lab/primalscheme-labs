@@ -5,7 +5,6 @@
 	import { onMount } from 'svelte';
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 
-	import '@picocss/pico';
 	import Fuse from 'fuse.js';
 
 	import Pagination from './Pagination.svelte';
