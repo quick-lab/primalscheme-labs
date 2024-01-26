@@ -5,22 +5,25 @@
 	import { base } from '$app/paths';
 </script>
 
-<nav data-sveltekit-reload>
-	<ul>
-		<li class="logo">
-			<a href="{base}/">
-				<img src={primalLogo} alt="triangle with all three sides equal" />
-				<strong>PrimalSchemes</strong>
-			</a>
-		</li>
-	</ul>
-	<ul>
-		<li><a href="{base}/">New Search</a></li>
-		<li><a href="https://primalscheme.com">Create Scheme</a></li>
-		<li><a href="{base}/faqs">FAQs</a></li>
-		<li><a href="{base}/about">About</a></li>
-	</ul>
-</nav>
+<header class="is-fixed-above-lg is-fixed">
+	<div class="container">
+		<a class="logo" href="{base}/">
+			<img src={primalLogo} alt="triangle with all three sides equal" />
+			<strong>primalscheme lab</strong>
+		</a>
+		<nav class="navbar" data-sveltekit-reload>
+			<ul>
+				<li><a href="{base}/">New Search</a></li>
+
+				<li><a href="{base}/faqs">FAQs</a></li>
+				<li><a href="{base}/about">About</a></li>
+				<li>
+					<a href="https://primalscheme.com" role="button">Create Scheme</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</header>
 
 <main class="container"><slot /></main>
 
@@ -56,36 +59,57 @@
 </footer>
 
 <style>
-	li a {
-		color: rgb(255, 254, 247);
+	@import '$lib/assets/css/main.css';
+
+	@media (min-width: 1024px) {
+		header.is-fixed-above-lg {
+			z-index: 2;
+			position: sticky;
+			top: 0;
+			-webkit-backdrop-filter: blur(1rem);
+			backdrop-filter: blur(1rem);
+			background-color: var(--pico-header-background);
+			transition: border-top-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+		}
+		header.is-fixed-above-lg.is-fixed {
+			border-bottom-color: var(--pico-header-border-color);
+			box-shadow: var(--pico-card-box-shadow);
+		}
 	}
-	li a:hover {
-		color: rgb(255, 254, 247);
-		text-decoration: underline;
+	header {
+		z-index: 4;
+		position: relative;
+		padding: 0.5rem 0;
+		border-bottom: var(--pico-border-width) solid transparent;
+		margin-bottom: calc(var(--pico-block-spacing-vertical) * 2);
 	}
-	li.logo a:hover {
-		text-decoration: none;
+
+	header .container {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 	}
+
+	header .container > a {
+		margin: calc(var(--pico-spacing) * -0.125) calc(var(--pico-spacing) * -0.25);
+		padding: calc(var(--pico-spacing) * 0.125) calc(var(--pico-spacing) * 0.25);
+		border-radius: var(--pico-border-radius);
+	}
+
 	.logo img {
-		height: 70px;
+		height: 50px;
 		margin-right: 10px;
 	}
-	p {
-		text-align: center;
+
+	a.logo {
+		text-decoration: none;
+		font-size: 1.2rem;
 	}
-	nav {
-		background-color: #00444d;
-		color: white;
-		margin-bottom: 20px;
-	}
-	nav ul {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 0;
-		margin: 0 20px;
+	a.logo:hover {
+		text-decoration: none;
 	}
 	footer {
+		text-align: center;
 		margin-top: 2em;
 		border-top: 1px solid rgb(196, 196, 196);
 		padding: 1em 0;

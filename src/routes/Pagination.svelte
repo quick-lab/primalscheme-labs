@@ -40,7 +40,7 @@
 	}
 	nav ul li a {
 		text-decoration: none;
-		color: #00444d;
+		color: var(--pico-primary);
 		font-weight: bold;
 		padding: 5px 10px;
 		border-radius: 5px;
@@ -48,7 +48,7 @@
 	}
 	nav ul li a:hover,
 	nav ul li a.active {
-		background-color: #00444d;
+		background-color: var(--pico-primary);
 		color: #ffffff;
 	}
 </style>

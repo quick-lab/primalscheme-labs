@@ -29,11 +29,12 @@
 		font-size: 1.5em;
 	}
 	td a {
-		color: #00444d;
+		color: var(--pico-primary);
 		background-color: transparent;
+		text-decoration: none;
 	}
 	td a:hover {
-		color: #810081;
+		color: var(--pico-secondary);
 		background-color: transparent;
 		text-decoration: underline;
 		transition: 0.2s;

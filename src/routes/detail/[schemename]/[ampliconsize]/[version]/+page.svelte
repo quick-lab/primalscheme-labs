@@ -259,12 +259,12 @@
 		font-weight: bold;
 	}
 	.dropdown {
-		background-color: #00444d;
+		background-color: var(--pico-primary);
 		color: rgb(255, 254, 247);
 	}
 
 	article header {
-		background-color: #00444d;
+		background-color: var(--pico-primary);
 		color: rgb(255, 254, 247);
 	}
 	article header a {

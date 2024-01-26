@@ -129,7 +129,7 @@
 	<hr />
 
 	{#if searchResult.length > 0}
-		<table class="striped">
+		<table>
 			<tbody>
 				{#each searchResult as result}
 					<ResultsRow scheme={result.item} {query} />
@@ -150,14 +150,13 @@
 
 <style>
 	form {
-		margin-top: 2em;
-		margin-bottom: 2em;
+		margin-bottom: 2rem;
 	}
 
 	details {
-		color: #00444d;
+		color: var(--pico-primary);
 	}
 	label:hover {
-		color: #810081;
+		color: var(--pico-secondary);
 	}
 </style>
