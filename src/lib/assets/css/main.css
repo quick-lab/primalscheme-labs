@@ -1,0 +1,24 @@
+:root {
+	--pico-font-size: 90%;
+	--pico-nav-link-spacing-horizontal: 1rem;
+	--pico-text-selection-color: rgba(129, 145, 181, 0.25);
+	--pico-primary: #5d6b89;
+	--pico-primary-background: #525f7a;
+	--pico-primary-underline: rgba(93, 107, 137, 0.5);
+	--pico-primary-hover: #48536b;
+	--pico-primary-hover-background: #48536b;
+	--pico-primary-focus: rgba(129, 145, 181, 0.5);
+	--pico-primary-inverse: #fff;
+}
+
+html {
+	overflow-x: hidden;
+	scroll-behavior: smooth;
+}
+
+html body {
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	align-items: start;
+	min-height: 100vh;
+}
