@@ -75,15 +75,24 @@
 <article>
 	<header>
 		<nav>
-			<li><strong>What are the plots?</strong></li>
+			<li><strong>What do the plots show?</strong></li>
 		</nav>
 	</header>
-	<p>
-		Figure legend (from top to bottom) - Coordinates of amplicons per pool Proportion of sequences
-		with a base at position in alignment (Base Occupancy) and %GC in a sliding window. Sequence
-		variation at position (Entropy) in a sliding window. Coordindates of primers passing
-		thermodynamic filtering.
-	</p>
+	<h6>Basic Plot: Figure legend (from top to bottom)</h6>
+	<ul><li>Coordinates of amplicons per pool.</li></ul>
+
+	<h6>Advanced Plot: Figure legend (from top to bottom)</h6>
+	<ul>
+		<li>Coordinates of amplicons per pool.</li>
+
+		<li>
+			Proportion of sequences with a base at position in alignment (Base Occupancy) and %GC in a
+			sliding window.
+		</li>
+		<li>Sequence variation at position (Entropy) in a sliding window.</li>
+
+		<li>Coordindates of primers passing thermodynamic filtering.</li>
+	</ul>
 </article>
 
 <style>
