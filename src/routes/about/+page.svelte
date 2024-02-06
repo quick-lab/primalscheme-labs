@@ -1,3 +1,7 @@
+<script>
+	import { base } from '$app/paths';
+</script>
+
 <main>
 	<h1>About</h1>
 	<p>
@@ -6,9 +10,10 @@
 		other users to find it.
 	</p>
 	<p>
-		The coloured status bar will indicate the development state of the scheme (see FAQ for more
-		information). Clicking on a scheme displays several new plots, scheme details, BED file and the
-		reference(s). If you are logged in you can comment and engage with other users using Github
+		The coloured status bar will indicate the development state of the scheme (see <a
+			href="{base}/faqs">FAQ</a
+		> for more information). Clicking on a scheme displays several new plots, scheme details, BED file
+		and the reference(s). If you are logged in you can comment and engage with other users using Github
 		Discussions.
 	</p>
 </main>
