@@ -12,8 +12,7 @@
 		</a>
 		<nav class="navbar" data-sveltekit-reload>
 			<ul>
-				<li><a href="{base}/">New Search</a></li>
-
+				<li><a href="{base}/">Search</a></li>
 				<li><a href="{base}/faqs">FAQs</a></li>
 				<li><a href="{base}/about">About</a></li>
 				<li>
