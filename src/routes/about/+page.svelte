@@ -1,13 +1,16 @@
-<!-- FILEPATH: /Users/kentcg/primal-dir/src/routes/about/+page.svelte -->
-
-<script>
-	export let name = 'John Doe';
-	export let age = 25;
-</script>
-
 <main>
 	<h1>About</h1>
-	<p>Central resources for primerschemes</p>
+	<p>
+		The number of primers schemes is increasing so we have built primalscheme lab to make it easier
+		to find schemes and track their status. You can request for your scheme to be tracked to enable
+		other users to find it.
+	</p>
+	<p>
+		The coloured status bar will indicate the development state of the scheme (see FAQ for more
+		information). Clicking on a scheme displays several new plots, scheme details, BED file and the
+		reference(s). If you are logged in you can comment and engage with other users using Github
+		Discussions.
+	</p>
 </main>
 
 <style>
