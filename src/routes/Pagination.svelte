@@ -15,7 +15,7 @@
 	<ul>
 		{#each Array(pageCount) as _, i}
 			<li>
-				<a class:active={i + 1 == pageNum} href="{base}/{queryStr}pageNum={i + 1}">{i + 1}</a>
+				<a class:active={i + 1 == pageNum} href="{base}{queryStr}pageNum={i + 1}">{i + 1}</a>
 			</li>
 		{/each}
 	</ul>
