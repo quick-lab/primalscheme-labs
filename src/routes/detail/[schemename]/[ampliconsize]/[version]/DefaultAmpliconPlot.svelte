@@ -199,18 +199,36 @@
 		}
 
 		let chromnameToAmplicons = {};
-
 		// Create each msa by grouping primers by chromname
-		let msaPrimers = Object.groupBy(primerData, ({ chromname }) => chromname);
+		let msaPrimers = primerData.reduce((acc, primer) => {
+			if (!acc[primer.chromname]) {
+				acc[primer.chromname] = [];
+			}
+			acc[primer.chromname].push(primer);
+			return acc;
+		}, {});
+
 		for (let chromname in msaPrimers) {
 			let msaData = msaPrimers[chromname];
 			// Create amplicons by combining primers by primernumber
-			let ampliconPrimers = Object.groupBy(msaData, ({ amplicon_number }) => amplicon_number);
+			let ampliconPrimers = msaData.reduce((acc, primer) => {
+				if (!acc[primer.amplicon_number]) {
+					acc[primer.amplicon_number] = [];
+				}
+				acc[primer.amplicon_number].push(primer);
+				return acc;
+			}, {});
 			// Generate amplicon data
 			let msaAmplicons = [];
 			for (let ampliconNumber in ampliconPrimers) {
 				// Group primers by strand
-				let primerFR = Object.groupBy(ampliconPrimers[ampliconNumber], ({ strand }) => strand);
+				let primerFR = ampliconPrimers[ampliconNumber].reduce((acc, primer) => {
+					if (!acc[primer.strand]) {
+						acc[primer.strand] = [];
+					}
+					acc[primer.strand].push(primer);
+					return acc;
+				}, {});
 
 				let amplicon = {
 					ampliconNumber: ampliconNumber,
