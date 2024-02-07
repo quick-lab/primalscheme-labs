@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
+	import { base } from '$app/paths';
 
 	import Fuse from 'fuse.js';
 
@@ -84,7 +85,7 @@
 	};
 
 	$: if (pageNum > pageCount) {
-		pageNum = pageCount;
+		pageNum = Math.max(pageCount, 1);
 	}
 
 	onSubmit = async () => {
