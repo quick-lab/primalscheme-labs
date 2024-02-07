@@ -21,7 +21,9 @@
 
 	const fuseOptions = {
 		isCaseSensitive: false,
-		keys: ['schemename', 'ampliconsize']
+		keys: ['schemename', 'authors', 'description'],
+		ignoreLocation: true,
+		threshold: 0.3
 	};
 
 	// Set the filter checkbox values
