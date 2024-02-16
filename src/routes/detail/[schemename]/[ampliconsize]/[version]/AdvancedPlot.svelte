@@ -129,6 +129,7 @@
 			xaxis: {
 				domain: [0, 1],
 				ticks: 'outside',
+				title: 'MSA index',
 				linewidth: 2,
 				linecolor: '#403F4C',
 				tickformat: ',d',

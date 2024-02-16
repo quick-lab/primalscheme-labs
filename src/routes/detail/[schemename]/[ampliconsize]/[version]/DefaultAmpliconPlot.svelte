@@ -117,12 +117,12 @@
 				showline: true,
 				mirror: true,
 				ticks: 'outside',
+				title: 'Reference index',
 				linewidth: 2,
 				linecolor: 'black',
 				tickformat: ',d',
 				title_font: { size: 18, family: 'Arial', color: 'Black' },
-				range: [0, length],
-				title: 'Position'
+				range: [0, length]
 			},
 			yaxis: {
 				title: 'Pool',
