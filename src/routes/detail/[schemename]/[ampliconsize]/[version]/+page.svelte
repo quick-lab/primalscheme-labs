@@ -22,11 +22,11 @@
 
 	// Advanced Plot
 	let showingAdvancedPlot = false;
+	let advancedPlotLoaded = false;
 
 	// Reference
 	let reference = undefined;
 	let referenceLoading = false;
-	let referenceLoaded = false;
 	let referenceErrored = false;
 	let showReference = false;
 
@@ -144,9 +144,18 @@
 
 		<article>
 			<header class="grid level">
-				<div><strong>Scheme overview</strong></div>
+				<div><strong>Scheme Overview</strong></div>
+				<div>
+					<input
+						name="whichPlot"
+						type="checkbox"
+						role="switch"
+						aria-invalid="false"
+						bind:checked={showingAdvancedPlot}
+						disabled={!advancedPlotLoaded}
+					/> Advanced Plot
+				</div>
 			</header>
-
 			<figure>
 				<AmpliconPlot hidden={showingAdvancedPlot} bedfileUrl={scheme.primer_bed_url} />
 			</figure>
@@ -154,8 +163,9 @@
 			{#if primalschemeMajorVersion >= 3}
 				<figure>
 					<AdvancedPlot
-						on:loaded={() => (showingAdvancedPlot = true)}
+						on:loaded={() => ((showingAdvancedPlot = true), (advancedPlotLoaded = true))}
 						bedfileUrl={scheme.primer_bed_url}
+						hidden={!showingAdvancedPlot}
 					/>
 				</figure>
 			{/if}

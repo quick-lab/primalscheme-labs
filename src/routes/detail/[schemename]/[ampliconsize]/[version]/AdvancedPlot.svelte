@@ -1,5 +1,7 @@
 <script>
 	export let bedfileUrl;
+	export let hidden = false;
+
 	import { onMount, createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
@@ -372,9 +374,9 @@
 
 						generateAdvancedPlot(plotData, PlotdivElement, chromname, Plotly);
 					}
-					loading = false;
-					dispatch('loaded');
 				});
+				loading = false;
+				dispatch('loaded');
 			});
 		} catch (error) {
 			console.log(error);
@@ -383,7 +385,7 @@
 	});
 </script>
 
-<div id="advancedPlot" />
+<div id="advancedPlot" {hidden} />
 {#if errored}
 	<p>Error loading plot</p>
 {:else if loading}
