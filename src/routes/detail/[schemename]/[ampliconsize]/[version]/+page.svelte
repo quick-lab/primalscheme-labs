@@ -22,12 +22,13 @@
 
 	// Advanced Plot
 	let showingAdvancedPlot = false;
+	let advancedPlotLoaded = false;
 
 	// Reference
 	let reference = undefined;
 	let referenceLoading = false;
 	let referenceErrored = false;
-	let showingReference = false;
+	let showReference = false;
 
 	// Info.json
 	let info = undefined;
@@ -38,23 +39,10 @@
 	let bedfile = undefined;
 	let bedfileErrored = false;
 	let bedfileLoading = true;
+	let showBedfile = false;
 
 	// Algo
 	let primalschemeMajorVersion = undefined;
-
-	async function loadReference() {
-		referenceLoading = true;
-		try {
-			let response = await fetch(scheme.reference_fasta_url);
-			reference = await response.text();
-			showingReference = true;
-		} catch (err) {
-			console.error(err);
-			referenceErrored = true;
-		} finally {
-			referenceLoading = false;
-		}
-	}
 
 	onMount(async function () {
 		// Load schemes
@@ -116,6 +104,18 @@
 		} finally {
 			bedfileLoading = false;
 		}
+
+		// Load reference
+		referenceLoading = true;
+		try {
+			let response = await fetch(scheme.reference_fasta_url);
+			reference = await response.text();
+		} catch (err) {
+			console.error(err);
+			referenceErrored = true;
+		} finally {
+			referenceLoading = false;
+		}
 	});
 </script>
 
@@ -143,7 +143,19 @@
 		{/if}
 
 		<article>
-			<header>Scheme Overview</header>
+			<header class="grid level">
+				<div><strong>Scheme Overview</strong></div>
+				<div>
+					<input
+						name="whichPlot"
+						type="checkbox"
+						role="switch"
+						aria-invalid="false"
+						bind:checked={showingAdvancedPlot}
+						disabled={!advancedPlotLoaded}
+					/> Advanced Plot
+				</div>
+			</header>
 			<figure>
 				<AmpliconPlot hidden={showingAdvancedPlot} bedfileUrl={scheme.primer_bed_url} />
 			</figure>
@@ -151,8 +163,9 @@
 			{#if primalschemeMajorVersion >= 3}
 				<figure>
 					<AdvancedPlot
-						on:loaded={() => (showingAdvancedPlot = true)}
+						on:loaded={() => ((showingAdvancedPlot = true), (advancedPlotLoaded = true))}
 						bedfileUrl={scheme.primer_bed_url}
+						hidden={!showingAdvancedPlot}
 					/>
 				</figure>
 			{/if}
@@ -179,42 +192,66 @@
 
 	<article>
 		<header class="grid level">
-			<div><strong>primer.bed</strong></div>
+			<div>
+				<strong>primer.bed</strong>
+				<input
+					name="showBedfile"
+					type="checkbox"
+					role="switch"
+					aria-invalid="false"
+					bind:checked={showBedfile}
+				/>
+			</div>
 			<div><a href={scheme.primer_bed_url} download>download</a></div>
 		</header>
 
-		{#each bedfile as bedline}
-			{#if bedline[0].startsWith('#')}
-				<pre>{bedline}</pre>
-			{/if}
-		{/each}
+		{#if showBedfile}
+			{#each bedfile as bedline}
+				{#if bedline[0].startsWith('#')}
+					<pre>{bedline}</pre>
+				{/if}
+			{/each}
 
-		<figure>
-			<table>
-				<!-- Write the bed file -->
-				{#each bedfile as bedline}
-					{#if !bedline[0].startsWith('#')}
-						<tr>
-							{#each bedline as column}
-								<td>{column}</td>
-							{/each}
-						</tr>
-					{/if}
-				{/each}
-			</table>
-		</figure>
+			<figure>
+				<table>
+					<!-- Write the bed file -->
+					{#each bedfile as bedline}
+						{#if !bedline[0].startsWith('#')}
+							<tr>
+								{#each bedline as column}
+									<td>{column}</td>
+								{/each}
+							</tr>
+						{/if}
+					{/each}
+				</table>
+			</figure>
+		{:else}
+			<p>Toggle to show</p>
+		{/if}
 	</article>
 
 	<article>
 		<header class="grid level">
-			<div><strong>reference.fasta</strong></div>
+			<div>
+				<strong>reference.fasta</strong>
+				<input
+					name="showBedfile"
+					type="checkbox"
+					role="switch"
+					aria-invalid="false"
+					bind:checked={showReference}
+				/>
+			</div>
 			<div><a href={scheme.reference_fasta_url} download>download</a></div>
 		</header>
 
-		{#if !showingReference}
-			<button on:click={loadReference}>Show reference</button>
+		{#if !showReference}
+			<p>Toggle to show</p>
 		{:else if referenceLoading}
 			<p aria-busy="true">Loading reference...</p>
+		{:else if referenceErrored}
+			<p>ERROR</p>
 		{:else}
 			<pre>{reference}</pre>
 		{/if}
