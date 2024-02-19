@@ -13,8 +13,8 @@
 			><strong>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</strong></a
 		>
 		<ul>
-			<li><strong>authors:</strong>{scheme.authors}</li>
-			<li><strong>species:</strong>{scheme.species}</li>
+			<li><strong>authors:</strong>{scheme.authors.join(', ')}</li>
+			<li><strong>species:</strong>{scheme.species.join(', ')}</li>
 			<li style="color:grey">{scheme.license}</li>
 		</ul>
 	</td>
