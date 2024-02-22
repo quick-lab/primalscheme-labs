@@ -15,6 +15,7 @@
 				<li><a href="{base}/">Search</a></li>
 				<li><a href="{base}/faqs">FAQs</a></li>
 				<li><a href="{base}/about">About</a></li>
+				<li><a href="https://github.com/quick-lab/primerschemes">GitHub</a></li>
 				<li>
 					<a href="https://primalscheme.com" role="button">Create Scheme</a>
 				</li>
