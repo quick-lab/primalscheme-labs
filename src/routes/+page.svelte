@@ -122,7 +122,7 @@
 			<summary>Advanced Search</summary>
 			<fieldset role="group">
 				<div>
-					Status
+					<legend>Status</legend>
 					{#each Object.entries(showStatus) as [status, value]}
 						<label>
 							<input
@@ -155,7 +155,7 @@
 	<Pagination
 		{pageCount}
 		{pageNum}
-		resultCount={flatSearchResult.length}
+		resultCount={filteredFlatSearchResult.length}
 		pageSize={searchResult.length}
 		{query}
 	/>
