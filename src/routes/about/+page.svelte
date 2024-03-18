@@ -5,7 +5,7 @@
 <main>
 	<h1>About</h1>
 	<p>
-		The number of primers schemes is increasing so we have built primalscheme lab to make it easier
+		The number of primers schemes is increasing so we have built primalscheme labs to make it easier
 		to find schemes and track their status. You can request for your scheme to be tracked to enable
 		other users to find it.
 	</p>

@@ -8,7 +8,7 @@
 	<div class="container">
 		<a class="logo" href="{base}/">
 			<img src={primalLogo} alt="triangle with all three sides equal" />
-			<strong>primalscheme lab</strong>
+			<strong>primalscheme labs</strong>
 		</a>
 		<nav class="navbar" data-sveltekit-reload>
 			<ul>
@@ -28,7 +28,7 @@
 
 <footer>
 	<p>
-		PrimalSchemes is a project by <a href="https://artic.network">ARTIC Network</a> and Quick Lab
+		primalscheme labs is a project by <a href="https://artic.network">ARTIC Network</a> and Quick Lab
 		<a href="https://github.com/quick-lab"
 			><img class="gitlogo" src={gitHubLogo} alt="Github logo" /></a
 		>
