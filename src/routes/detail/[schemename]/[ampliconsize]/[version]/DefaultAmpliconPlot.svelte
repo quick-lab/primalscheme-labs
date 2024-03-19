@@ -259,7 +259,7 @@
 			let plotBody = document.getElementById('defaultPlot');
 			plotBody.append(PlotdivElement);
 
-			generateDefaultPlot(amplicons, plotBody, chromname, Plotly, pools, length);
+			generateDefaultPlot(amplicons, PlotdivElement, chromname, Plotly, pools, length);
 		}
 		loading = false;
 	});
