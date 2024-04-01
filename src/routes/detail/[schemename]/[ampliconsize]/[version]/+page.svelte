@@ -125,7 +125,6 @@
 	<dialog open>
 		<article>
 			<header>Error</header>
-
 			<p>Unable to load scheme data.</p>
 		</article>
 	</dialog>
@@ -133,6 +132,10 @@
 	<div class="grid level">
 		<h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2>
 		<span class="pill {scheme.status}"><strong>{scheme.status}</strong></span>
+		<a
+			href="https://github.com/quick-lab/primerschemes/tree/main/primerschemes/{scheme.schemename}/{scheme.ampliconsize}/{scheme.schemeversion}"
+			class="contrast">[github-page]</a
+		>
 	</div>
 
 	{#if infoLoading}
