@@ -181,16 +181,18 @@
 			<div><strong>info.json</strong></div>
 			<div><a href={scheme.info_json_url} download>download</a></div>
 		</header>
-		<figure>
-			<table>
-				{#each Object.keys(info) as key}
-					<tr>
-						<th scope="row">{key}:</th>
-						<td>{info[key]}</td>
-					</tr>
-				{/each}
-			</table>
-		</figure>
+		<div class="overflow-auto">
+			<figure>
+				<table>
+					{#each Object.keys(info) as key}
+						<tr>
+							<th scope="row">{key}:</th>
+							<td>{info[key]}</td>
+						</tr>
+					{/each}
+				</table>
+			</figure>
+		</div>
 	</article>
 
 	<article>
