@@ -187,7 +187,13 @@
 					{#each Object.keys(info) as key}
 						<tr>
 							<th scope="row">{key}:</th>
-							<td>{info[key]}</td>
+							{#if info[key] instanceof Array}
+								<td>{info[key].join(', ')}</td>
+							{:else if info[key] instanceof Object}
+								<td>{JSON.stringify(info[key], null, 2)}</td>
+							{:else}
+								<td>{info[key]}</td>
+							{/if}
 						</tr>
 					{/each}
 				</table>
