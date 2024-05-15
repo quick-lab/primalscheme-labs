@@ -37,6 +37,24 @@
 		validated: true
 	};
 
+	// Get the collection names
+	let collections = {};
+
+	// filter function
+	const filterFunction = (scheme, statusObj, collectionObj) => {
+		// Filter by status
+		if (!statusObj[scheme.status]) return false;
+
+		// Filter by collection
+		if (
+			Object.entries(collectionObj).some(
+				([collection, value]) => value && !scheme.collections.includes(collection)
+			)
+		)
+			return false;
+		return true;
+	};
+
 	onMount(async function () {
 		query = $page.url.searchParams.get('q') || '';
 		pageNum = $page.url.searchParams.get('pageNum') || 1;
@@ -67,13 +85,31 @@
 				score: 1
 		  }));
 
+	// Get the collection names
+	$: {
+		let _a = [
+			...new Set(
+				flatSchemes?.reduce((acc, scheme) => {
+					acc.push(...scheme?.collections);
+					return acc;
+				}, [])
+			)
+		].sort();
+		_a.forEach((collection) => {
+			if (collections[collection] === undefined) {
+				collections[collection] = false;
+			}
+		});
+	}
+
 	// Pages
 	const pageSize = 25;
 	$: pageIndex = pageNum - 1;
 	$: pageCount = Math.ceil(flatSearchResult?.length / pageSize);
 
+	// Filter the search results
 	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
-		return showStatus[item.item.status];
+		return filterFunction(item.item, showStatus, collections);
 	});
 
 	$: searchResult = filteredFlatSearchResult?.slice(
@@ -119,21 +155,45 @@
 		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
 
 		<details open>
-			<summary>Advanced Search</summary>
-			<fieldset role="group">
-				<div>
-					<legend>Status</legend>
-					{#each Object.entries(showStatus) as [status, value]}
-						<label>
-							<input
-								type="checkbox"
-								role="switch"
-								bind:checked={showStatus[status]}
-								aria-invalid="false"
-							/>
-							Show {status}
-						</label>
-					{/each}
+			<summary><h5>Advanced Search</h5></summary>
+			<fieldset>
+				<div class="grid">
+					<!-- Status filter -->
+					<div>
+						<legend><h6>Status</h6></legend>
+						{#each Object.entries(showStatus) as [status, value]}
+							<label>
+								<input
+									type="checkbox"
+									role="switch"
+									bind:checked={showStatus[status]}
+									aria-invalid="false"
+								/>
+								Show {status}
+							</label>
+						{/each}
+					</div>
+					<!-- Collection filter -->
+					<div>
+						<legend><h6>Collection</h6></legend>
+						<div>
+							{#each Object.entries(collections) as [collection, value]}
+								{#if value}
+									<button
+										class="collectionbutton"
+										on:click={() => (collections[collection] = !collections[collection])}
+										>{collection}</button
+									>
+								{:else}
+									<button
+										class="collectionbutton outline"
+										on:click={() => (collections[collection] = !collections[collection])}
+										>{collection}</button
+									>
+								{/if}
+							{/each}
+						</div>
+					</div>
 				</div>
 			</fieldset>
 		</details>
@@ -164,6 +224,9 @@
 <style>
 	form {
 		margin-bottom: 2rem;
+	}
+	button.collectionbutton {
+		margin: 0.2em;
 	}
 
 	details {
