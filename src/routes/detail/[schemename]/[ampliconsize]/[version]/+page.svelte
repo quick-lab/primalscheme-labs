@@ -215,31 +215,32 @@
 			</div>
 			<div><a href={scheme.primer_bed_url} download>download</a></div>
 		</header>
+		<div class="overflow-auto">
+			{#if showBedfile}
+				{#each bedfile as bedline}
+					{#if bedline[0].startsWith('#')}
+						<pre>{bedline}</pre>
+					{/if}
+				{/each}
 
-		{#if showBedfile}
-			{#each bedfile as bedline}
-				{#if bedline[0].startsWith('#')}
-					<pre>{bedline}</pre>
-				{/if}
-			{/each}
-
-			<figure>
-				<table>
-					<!-- Write the bed file -->
-					{#each bedfile as bedline}
-						{#if !bedline[0].startsWith('#')}
-							<tr>
-								{#each bedline as column}
-									<td>{column}</td>
-								{/each}
-							</tr>
-						{/if}
-					{/each}
-				</table>
-			</figure>
-		{:else}
-			<p>Toggle to show</p>
-		{/if}
+				<figure>
+					<table>
+						<!-- Write the bed file -->
+						{#each bedfile as bedline}
+							{#if !bedline[0].startsWith('#')}
+								<tr>
+									{#each bedline as column}
+										<td>{column}</td>
+									{/each}
+								</tr>
+							{/if}
+						{/each}
+					</table>
+				</figure>
+			{:else}
+				<p>Toggle to show</p>
+			{/if}
+		</div>
 	</article>
 
 	<article>
@@ -256,16 +257,17 @@
 			</div>
 			<div><a href={scheme.reference_fasta_url} download>download</a></div>
 		</header>
-
-		{#if !showReference}
-			<p>Toggle to show</p>
-		{:else if referenceLoading}
-			<p aria-busy="true">Loading reference...</p>
-		{:else if referenceErrored}
-			<p>ERROR</p>
-		{:else}
-			<pre>{reference}</pre>
-		{/if}
+		<div class="overflow-auto">
+			{#if !showReference}
+				<p>Toggle to show</p>
+			{:else if referenceLoading}
+				<p aria-busy="true">Loading reference...</p>
+			{:else if referenceErrored}
+				<p>ERROR</p>
+			{:else}
+				<pre>{reference}</pre>
+			{/if}
+		</div>
 	</article>
 
 	<giscus-widget
