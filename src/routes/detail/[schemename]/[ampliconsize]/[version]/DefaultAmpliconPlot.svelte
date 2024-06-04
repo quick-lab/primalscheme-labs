@@ -97,7 +97,7 @@
 		let ampliconData = {
 			x: ampliconPointDataX,
 			y: ampliconPointDataY,
-			type: 'scatter',
+			type: 'scattergl',
 			mode: 'markers',
 			hovertemplate: '%{text}<extra></extra>',
 			text: ampliconPointDataLabel,
@@ -139,7 +139,10 @@
 			},
 			shapes: [...fPrimerLayout, ...rPrimerLayout, ...ampliconLineLayout]
 		};
-		let config = { responsive: true };
+		let config = {
+			responsive: true,
+			modeBarButtonsToRemove: ['autoScale2d', 'select', 'select2d', 'lasso2d', 'zoom']
+		};
 		Plotly.newPlot(div, [ampliconData], ampliconLayout, config);
 	}
 	// Log data to see if working

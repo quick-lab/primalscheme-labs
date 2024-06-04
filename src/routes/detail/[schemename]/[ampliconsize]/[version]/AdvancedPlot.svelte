@@ -210,7 +210,7 @@
 		let ampliconData = {
 			x: ampliconPointDataX,
 			y: ampliconPointDataY,
-			type: 'scatter',
+			type: 'scattergl',
 			mode: 'markers',
 			hovertemplate: '%{text}<extra></extra>',
 			text: ampliconPointDataLabel,
@@ -233,7 +233,7 @@
 			y: gc_y,
 			xaxis: 'x',
 			yaxis: 'y30',
-			type: 'scatter',
+			type: 'scattergl',
 			mode: 'lines',
 			row: 2,
 			col: 1,
@@ -253,7 +253,7 @@
 			y: base_occupancy_y,
 			xaxis: 'x',
 			yaxis: 'y2',
-			type: 'scatter',
+			type: 'scattergl',
 			mode: 'lines',
 			row: 2,
 			col: 1,
@@ -276,7 +276,7 @@
 			y: entropy_y,
 			xaxis: 'x',
 			yaxis: 'y4',
-			type: 'scatter',
+			type: 'scattergl',
 			mode: 'lines',
 			row: 3,
 			col: 1,
@@ -298,7 +298,7 @@
 			y: thermopassing_fprimers_y,
 			xaxis: 'x',
 			yaxis: 'y5',
-			type: 'scatter',
+			type: 'scattergl',
 			mode: 'markers',
 			color: '#e84855',
 			row: 4,
@@ -320,7 +320,7 @@
 			y: thermopassing_rprimers_y,
 			xaxis: 'x',
 			yaxis: 'y5',
-			type: 'scatter',
+			type: 'scattergl',
 			mode: 'markers',
 			row: 4,
 			col: 1,
@@ -328,7 +328,10 @@
 			name: 'Thermopassing Primers'
 		};
 
-		let config = { responsive: true };
+		let config = {
+			responsive: true,
+			modeBarButtonsToRemove: ['autoScale2d', 'select', 'select2d', 'lasso2d', 'zoom']
+		};
 
 		Plotly.newPlot(
 			div,
