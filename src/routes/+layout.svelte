@@ -28,7 +28,8 @@
 
 <footer>
 	<p>
-		primalscheme labs is a project by <a href="https://artic.network">ARTIC Network</a> and Quick Lab
+		primalscheme labs is a project by <a href="https://artic.network">ARTIC Network</a> and Quick
+		Lab
 		<a href="https://github.com/quick-lab"
 			><img class="gitlogo" src={gitHubLogo} alt="Github logo" /></a
 		>
@@ -60,21 +61,18 @@
 <style>
 	@import '$lib/assets/css/main.css';
 
-	@media (min-width: 1024px) {
-		header.is-fixed-above-lg {
-			z-index: 2;
-			position: sticky;
-			top: 0;
-			-webkit-backdrop-filter: blur(1rem);
-			backdrop-filter: blur(1rem);
-			background-color: var(--pico-header-background);
-			transition: border-top-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
-		}
-		header.is-fixed-above-lg.is-fixed {
-			border-bottom-color: var(--pico-header-border-color);
-			box-shadow: var(--pico-card-box-shadow);
-		}
+	header.is-fixed-above-lg {
+		z-index: 2;
+		position: sticky;
+		top: 0;
+		background-color: var(--pico-header-background);
+		transition: border-top-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
 	}
+	header.is-fixed-above-lg.is-fixed {
+		border-bottom-color: var(--pico-header-border-color);
+		box-shadow: var(--pico-card-box-shadow);
+	}
+
 	header {
 		z-index: 4;
 		position: relative;

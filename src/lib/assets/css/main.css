@@ -9,6 +9,8 @@
 	--pico-primary-hover-background: #48536b;
 	--pico-primary-focus: rgba(129, 145, 181, 0.5);
 	--pico-primary-inverse: #fff;
+	--pico-header-background: #e9e9e9;
+
 }
 
 html {
