@@ -3,11 +3,19 @@
 	export let pageNum;
 	export let resultCount;
 	export let pageSize;
-	export let query;
 
+	import { page } from '$app/stores';
 	import { base } from '$app/paths';
+	import { goto } from '$app/navigation';
 
-	$: queryStr = query.trim().length ? `/?q=${encodeURIComponent(query.trim())}&` : '/?';
+	$: uriSearchParams = $page.url.searchParams;
+
+	let updateURLPageNum = async (newPageNum) => {
+		uriSearchParams.set(encodeURIComponent('pageNum'), encodeURIComponent(newPageNum));
+		await goto(`${base}/?${uriSearchParams.toString()}`, {
+			keepFocus: true
+		});
+	};
 </script>
 
 <nav data-sveltekit-reload>
@@ -15,7 +23,20 @@
 	<ul>
 		{#each Array(pageCount) as _, i}
 			<li>
-				<a class:active={i + 1 == pageNum} href="{base}{queryStr}pageNum={i + 1}">{i + 1}</a>
+				{#if i + 1 == pageNum}
+					<button
+						on:click={() => {
+							updateURLPageNum(i + 1);
+						}}>{i + 1}</button
+					>
+				{:else}
+					<button
+						class="outline"
+						on:click={() => {
+							updateURLPageNum(i + 1);
+						}}>{i + 1}</button
+					>
+				{/if}
 			</li>
 		{/each}
 	</ul>
@@ -37,18 +58,5 @@
 	nav ul li {
 		list-style: none;
 		margin: 0 5px;
-	}
-	nav ul li a {
-		text-decoration: none;
-		color: var(--pico-primary);
-		font-weight: bold;
-		padding: 5px 10px;
-		border-radius: 5px;
-		background-color: #ffffff;
-	}
-	nav ul li a:hover,
-	nav ul li a.active {
-		background-color: var(--pico-primary);
-		color: #ffffff;
 	}
 </style>

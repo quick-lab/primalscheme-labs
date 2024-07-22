@@ -17,7 +17,6 @@
 	let query = '';
 	let pageNum = 1;
 	let fuse = undefined;
-	let onSubmit = () => {};
 
 	const fuseOptions = {
 		isCaseSensitive: false,
@@ -27,7 +26,7 @@
 	};
 
 	// Set the filter checkbox values
-	let showStatus = {
+	let defaultShowStatus = {
 		withdrawn: false,
 		deprecated: false,
 		draft: true,
@@ -36,8 +35,9 @@
 		validated: true
 	};
 
-	// Get the collection names
-	let collections = {};
+	// Handle the URL
+	$: uriSearchParams = $page.url.searchParams;
+	$: pageNum = $page.url.searchParams.get('pageNum') || 1;
 
 	// filter function
 	const filterFunction = (scheme, statusObj, collectionObj) => {
@@ -73,6 +73,36 @@
 		}
 
 		fuse = new Fuse(flatSchemes, fuseOptions);
+
+		// Get the collection names
+		{
+			let _a = [
+				...new Set(
+					flatSchemes?.reduce((acc, scheme) => {
+						acc.push(...scheme?.collections);
+						return acc;
+					}, [])
+				)
+			].sort();
+			_a.forEach((collection) => {
+				if (collections[collection] === undefined) {
+					collections[collection] = false;
+				}
+			});
+		}
+
+		// Parse the URL
+		for (let [key, value] of $page.url.searchParams.entries()) {
+			// Set the filter checkbox values
+			if (defaultShowStatus.hasOwnProperty(key)) {
+				showStatus[key] = value === 'true';
+			}
+			// Set the collection checkbox values
+
+			if (collections.hasOwnProperty(key)) {
+				collections[key] = value === 'true';
+			}
+		}
 	});
 
 	$: flatSearchResult = query.trim().length
@@ -85,26 +115,13 @@
 		  }));
 
 	// Get the collection names
-	$: {
-		let _a = [
-			...new Set(
-				flatSchemes?.reduce((acc, scheme) => {
-					acc.push(...scheme?.collections);
-					return acc;
-				}, [])
-			)
-		].sort();
-		_a.forEach((collection) => {
-			if (collections[collection] === undefined) {
-				collections[collection] = false;
-			}
-		});
-	}
+	let collections = {};
 
 	// Pages
 	const pageSize = 25;
 	$: pageIndex = pageNum - 1;
-	$: pageCount = Math.ceil(flatSearchResult?.length / pageSize);
+	$: pageCount = Math.ceil(filteredFlatSearchResult?.length / pageSize);
+	$: pageNum, updateURLPageNum(pageNum);
 
 	// Filter the search results
 	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
@@ -119,29 +136,54 @@
 	let timer;
 	const debouncedSubmit = async () => {
 		clearTimeout(timer);
-		timer = setTimeout(onSubmit, 250);
+		timer = setTimeout(updateURLQuery, 250);
 	};
 
 	$: if (pageNum > pageCount) {
 		pageNum = Math.max(pageCount, 1);
 	}
 
-	onSubmit = async () => {
-		let navSearchQuery = $page.url.searchParams.get('q') || '';
-		let navPageNum = $page.url.searchParams.get('pageNum') || 1;
+	// Only encode changes into the URL
+	let showStatus = { ...defaultShowStatus };
 
-		if (query.trim() == navSearchQuery.trim() && pageNum == navPageNum.trim())
-			// don't navigate if the query is the same
-			return;
-
-		await goto(
-			query.trim().length
-				? `${base}/?q=${encodeURIComponent(query.trim())}&pageNum=${pageNum}`
-				: `${base}/?pageNum=${pageNum}`,
-			{
-				keepFocus: true
+	let updateURLStatus = async () => {
+		for (let [key, value] of Object.entries(showStatus)) {
+			if (defaultShowStatus[key] != value) {
+				uriSearchParams.set(encodeURIComponent(key), encodeURIComponent(value));
+			} else {
+				uriSearchParams.delete(encodeURIComponent(key));
 			}
-		);
+		}
+		await goto(`${base}/?${uriSearchParams.toString()}`, {
+			keepFocus: true
+		});
+	};
+
+	let updateURLCollections = async () => {
+		for (let [key, value] of Object.entries(collections)) {
+			if (value) {
+				uriSearchParams.set(encodeURIComponent(key), encodeURIComponent(value));
+			} else {
+				uriSearchParams.delete(encodeURIComponent(key));
+			}
+		}
+		await goto(`${base}/?${uriSearchParams.toString()}`, {
+			keepFocus: true
+		});
+	};
+
+	let updateURLQuery = async () => {
+		uriSearchParams.set('q', encodeURIComponent(query.trim()));
+		await goto(`${base}/?${uriSearchParams.toString()}`, {
+			keepFocus: true
+		});
+	};
+
+	let updateURLPageNum = async () => {
+		uriSearchParams.set('pageNum', pageNum);
+		await goto(`${base}/?${uriSearchParams.toString()}`, {
+			keepFocus: true
+		});
 	};
 </script>
 
@@ -150,7 +192,7 @@
 {:else if schemesErrored}
 	<p>Unable to load schemes data...</p>
 {:else}
-	<form id="search form" on:submit|preventDefault={onSubmit}>
+	<form id="search form" on:submit={updateURLQuery}>
 		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
 
 		<details open>
@@ -166,6 +208,7 @@
 									type="checkbox"
 									role="switch"
 									bind:checked={showStatus[status]}
+									on:change={updateURLStatus}
 									aria-invalid="false"
 								/>
 								Show {status}
@@ -180,14 +223,20 @@
 								{#if value}
 									<button
 										class="collectionbutton"
-										on:click={() => (collections[collection] = !collections[collection])}
-										>{collection}</button
+										type="button"
+										on:click={() => {
+											collections[collection] = !collections[collection];
+											updateURLCollections();
+										}}>{collection}</button
 									>
 								{:else}
 									<button
 										class="collectionbutton outline"
-										on:click={() => (collections[collection] = !collections[collection])}
-										>{collection}</button
+										type="button"
+										on:click={() => {
+											collections[collection] = !collections[collection];
+											updateURLCollections();
+										}}>{collection}</button
 									>
 								{/if}
 							{/each}
@@ -216,7 +265,6 @@
 		{pageNum}
 		resultCount={filteredFlatSearchResult.length}
 		pageSize={searchResult.length}
-		{query}
 	/>
 {/if}
 
