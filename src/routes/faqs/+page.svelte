@@ -51,7 +51,7 @@
 			<ul>
 				<li><span class="pill draft"><b>draft</b></span></li>
 				<li>
-					Scheme has been inspected <i>in silico</i>
+					Scheme has been inspected <i>in silico</i>.
 				</li>
 			</ul>
 		</nav>
@@ -91,7 +91,7 @@
 		</li>
 		<li>Sequence variation at position (Entropy) in a sliding window.</li>
 
-		<li>Coordindates of primers passing thermodynamic filtering.</li>
+		<li>Coordinates of primers passing thermodynamic filtering.</li>
 	</ul>
 </article>
 

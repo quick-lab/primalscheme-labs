@@ -17,7 +17,11 @@
 				<li><a href="{base}/about">About</a></li>
 				<li><a href="https://github.com/quick-lab/primerschemes">GitHub</a></li>
 				<li>
-					<a href="https://primalscheme.com" role="button">Create Scheme</a>
+					<button
+						class="secondary"
+						onClick="javascript:window.location.href='https://primalscheme.com'"
+						>Create Scheme</button
+					>
 				</li>
 			</ul>
 		</nav>

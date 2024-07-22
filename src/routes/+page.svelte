@@ -9,7 +9,6 @@
 	import Fuse from 'fuse.js';
 
 	import Pagination from './Pagination.svelte';
-	import sort from 'plotly.js/lib/sort';
 
 	// Initial state
 	let flatSchemes = undefined;

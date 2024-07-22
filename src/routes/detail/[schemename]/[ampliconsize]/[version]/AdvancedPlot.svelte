@@ -237,7 +237,8 @@
 			mode: 'lines',
 			row: 2,
 			col: 1,
-			line: { color: '#005c68', width: 2 }
+			line: { color: '#005c68', width: 2 },
+			name: 'GC Content'
 		};
 
 		// Create the base occupancy plot
