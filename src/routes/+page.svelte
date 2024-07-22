@@ -15,7 +15,6 @@
 	let schemesLoading = true;
 	let schemesErrored = false;
 	let query = '';
-	let pageNum = 1;
 	let fuse = undefined;
 
 	const fuseOptions = {
@@ -52,7 +51,6 @@
 
 	// Handle the URL
 	$: uriSearchParams = $page.url.searchParams;
-	$: pageNum = $page.url.searchParams.get('pageNum') || 1;
 
 	// filter function
 	const filterFunction = (scheme, statusObj, collectionObj) => {
@@ -136,6 +134,7 @@
 	const pageSize = 25;
 	$: pageIndex = pageNum - 1;
 	$: pageCount = Math.ceil(filteredFlatSearchResult?.length / pageSize);
+	$: pageNum = uriSearchParams.get('pageNum') || 1;
 
 	// Filter the search results
 	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
@@ -161,6 +160,7 @@
 	let showStatus = { ...defaultShowStatus };
 
 	let updateURLStatus = async () => {
+		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		for (let [key, value] of Object.entries(showStatus)) {
 			if (defaultShowStatus[key] != value) {
 				uriSearchParams.set(encodeURIComponent(key), encodeURIComponent(value));
@@ -174,6 +174,7 @@
 	};
 
 	let updateURLCollections = async () => {
+		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		for (let [key, value] of Object.entries(collections)) {
 			if (value) {
 				uriSearchParams.set(encodeURIComponent(key), encodeURIComponent(value));
@@ -187,6 +188,7 @@
 	};
 
 	let updateURLQuery = async () => {
+		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		uriSearchParams.set('q', encodeURIComponent(query.trim()));
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
 			keepFocus: true
@@ -199,7 +201,7 @@
 {:else if schemesErrored}
 	<p>Unable to load schemes data...</p>
 {:else}
-	<form id="search form" onkeydown="if(event.keyCode === 13){false}" on:submit={updateURLQuery}>
+	<form id="search form" on:submit={updateURLQuery}>
 		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
 
 		<details open>

@@ -8,9 +8,8 @@
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 
-	$: uriSearchParams = $page.url.searchParams;
-
 	let updateURLPageNum = async (newPageNum) => {
+		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		uriSearchParams.set(encodeURIComponent('pageNum'), encodeURIComponent(newPageNum));
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
 			keepFocus: true

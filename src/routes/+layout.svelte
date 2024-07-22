@@ -114,6 +114,7 @@
 		margin-top: 2em;
 		border-top: 1px solid rgb(196, 196, 196);
 		padding: 1em 0;
+		background-color: var(--pico-header-background);
 	}
 	.gitlogo {
 		height: 22px;
