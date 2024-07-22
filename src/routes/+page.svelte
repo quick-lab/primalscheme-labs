@@ -25,6 +25,21 @@
 		threshold: 0.3
 	};
 
+	// Disable enter key, as the refresh wipes the URL query
+	window.addEventListener(
+		'keydown',
+		function (e) {
+			if (e.keyIdentifier == 'U+000A' || e.keyIdentifier == 'Enter' || e.keyCode == 13) {
+				if (e.target.nodeName == 'INPUT' && e.target.type == 'text') {
+					e.preventDefault();
+
+					return false;
+				}
+			}
+		},
+		true
+	);
+
 	// Set the filter checkbox values
 	let defaultShowStatus = {
 		withdrawn: false,
@@ -121,7 +136,6 @@
 	const pageSize = 25;
 	$: pageIndex = pageNum - 1;
 	$: pageCount = Math.ceil(filteredFlatSearchResult?.length / pageSize);
-	$: pageNum, updateURLPageNum(pageNum);
 
 	// Filter the search results
 	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
@@ -178,13 +192,6 @@
 			keepFocus: true
 		});
 	};
-
-	let updateURLPageNum = async () => {
-		uriSearchParams.set('pageNum', pageNum);
-		await goto(`${base}/?${uriSearchParams.toString()}`, {
-			keepFocus: true
-		});
-	};
 </script>
 
 {#if schemesLoading}
@@ -192,7 +199,7 @@
 {:else if schemesErrored}
 	<p>Unable to load schemes data...</p>
 {:else}
-	<form id="search form" on:submit={updateURLQuery}>
+	<form id="search form" onkeydown="if(event.keyCode === 13){false}" on:submit={updateURLQuery}>
 		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
 
 		<details open>
