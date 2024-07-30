@@ -412,7 +412,7 @@
 		--pico-border-color: var(--pico-contrast-inverse);
 	}
 	button.download:hover {
-		font-weight: bold;
+		box-shadow: 0px 0px 1px 1px var(--pico-contrast-inverse);
 	}
 	ul.downloadbutton {
 		padding-top: 0;
