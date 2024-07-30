@@ -36,6 +36,7 @@
 	let infoErrored = false;
 
 	// Bedfile
+	let rawBedfile = undefined;
 	let bedfile = undefined;
 	let bedfileErrored = false;
 	let bedfileLoading = true;
@@ -43,6 +44,24 @@
 
 	// Algo
 	let primalschemeMajorVersion = undefined;
+
+	function download(content, filename) {
+		// Create a file
+		let file = new File([content], filename, {
+			type: 'text/plain'
+		});
+		const link = document.createElement('a');
+		const url = URL.createObjectURL(file);
+
+		link.href = url;
+		link.download = file.name;
+		document.body.appendChild(link);
+		link.click();
+
+		// Remove links
+		document.body.removeChild(link);
+		window.URL.revokeObjectURL(url);
+	}
 
 	onMount(async function () {
 		// Load schemes
@@ -92,9 +111,9 @@
 		// Load bedfile
 		try {
 			let response = await fetch(scheme.primer_bed_url);
-			bedfile = await response.text();
+			rawBedfile = await response.text();
 
-			bedfile = bedfile
+			bedfile = rawBedfile
 				.trim()
 				.split('\n')
 				.map((bedline) => bedline.split('\t'));
@@ -176,10 +195,28 @@
 	{/if}
 
 	<h2>Scheme Details</h2>
+
 	<article>
-		<header class="grid level">
-			<div><strong>info.json</strong></div>
-			<div><a href={scheme.info_json_url} download>download</a></div>
+		<header>
+			<nav>
+				<ul class="downloadbutton">
+					<li><strong>info.json</strong></li>
+				</ul>
+				<ul class="downloadbutton">
+					<li class="downloadbutton">
+						<button
+							type="button"
+							class="download"
+							data-tooltip="Download info.json"
+							on:click={() => {
+								download(JSON.stringify(info, null, 2), 'info.json');
+							}}
+						>
+							download
+						</button>
+					</li>
+				</ul>
+			</nav>
 		</header>
 		<div class="overflow-auto">
 			<figure>
@@ -202,39 +239,61 @@
 	</article>
 
 	<article>
-		<header class="grid level">
-			<div>
-				<strong>primer.bed</strong>
-				<input
-					name="showBedfile"
-					type="checkbox"
-					role="switch"
-					aria-invalid="false"
-					bind:checked={showBedfile}
-				/>
-			</div>
-			<div><a href={scheme.primer_bed_url} download>download</a></div>
+		<header>
+			<nav>
+				<ul class="downloadbutton">
+					<li><strong>primer.bed</strong></li>
+					<li>
+						<em data-tooltip="Show file">
+							<input
+								name="showBedfile"
+								type="checkbox"
+								role="switch"
+								aria-invalid="false"
+								bind:checked={showBedfile}
+							/>
+						</em>
+					</li>
+				</ul>
+				<ul class="downloadbutton">
+					<li class="downloadbutton">
+						<button
+							type="button"
+							class="download"
+							data-tooltip="Download primer.bed"
+							on:click={() => {
+								download(rawBedfile, 'primer.bed');
+							}}
+						>
+							download
+						</button>
+					</li>
+				</ul>
+			</nav>
 		</header>
 		<div class="overflow-auto">
 			{#if showBedfile}
-				{#each bedfile as bedline}
-					{#if bedline[0].startsWith('#')}
-						<pre>{bedline}</pre>
-					{/if}
-				{/each}
-
 				<figure>
+					{#each bedfile as bedline}
+						{#if bedline[0].startsWith('#')}
+							<pre>{bedline}</pre>
+						{/if}
+					{/each}
 					<table>
+						<pre>
+						<tbody>
 						<!-- Write the bed file -->
 						{#each bedfile as bedline}
-							{#if !bedline[0].startsWith('#')}
-								<tr>
+									{#if !bedline[0].startsWith('#')}
+										<tr>
 									{#each bedline as column}
-										<td>{column}</td>
-									{/each}
+												<td>{column}</td>
+											{/each}
 								</tr>
-							{/if}
-						{/each}
+									{/if}
+								{/each}
+						</tbody>
+					</pre>
 					</table>
 				</figure>
 			{:else}
@@ -244,18 +303,37 @@
 	</article>
 
 	<article>
-		<header class="grid level">
-			<div>
-				<strong>reference.fasta</strong>
-				<input
-					name="showBedfile"
-					type="checkbox"
-					role="switch"
-					aria-invalid="false"
-					bind:checked={showReference}
-				/>
-			</div>
-			<div><a href={scheme.reference_fasta_url} download>download</a></div>
+		<header>
+			<nav>
+				<ul class="downloadbutton">
+					<li><strong>reference.fasta</strong></li>
+					<li>
+						<em data-tooltip="Show file">
+							<input
+								name="showBedfile"
+								type="checkbox"
+								role="switch"
+								aria-invalid="false"
+								bind:checked={showReference}
+							/>
+						</em>
+					</li>
+				</ul>
+				<ul class="downloadbutton">
+					<li class="downloadbutton">
+						<button
+							type="button"
+							class="download"
+							data-tooltip="Download reference.fasta"
+							on:click={() => {
+								download(reference, 'reference.fasta');
+							}}
+						>
+							download
+						</button>
+					</li>
+				</ul>
+			</nav>
 		</header>
 		<div class="overflow-auto">
 			{#if !showReference}
@@ -312,17 +390,9 @@
 		background-color: var(--pico-primary);
 		color: rgb(255, 254, 247);
 	}
-
 	article header {
 		background-color: var(--pico-primary);
 		color: rgb(255, 254, 247);
-	}
-	article header a {
-		color: rgb(255, 254, 247);
-	}
-	article header a:hover {
-		color: rgb(255, 254, 247);
-		text-decoration: underline;
 	}
 	.breadcrumb {
 		margin-bottom: 2em;
@@ -331,5 +401,26 @@
 
 	p[aria-busy='true'] {
 		margin-bottom: 1em;
+	}
+	td {
+		background-color: transparent;
+	}
+	button.download {
+		color: var(--pico-contrast-inverse);
+		background-color: rgb(0, 0, 0, 0);
+		margin-bottom: 0em;
+		--pico-border-color: var(--pico-contrast-inverse);
+	}
+	button.download:hover {
+		font-weight: bold;
+	}
+	ul.downloadbutton {
+		padding-top: 0;
+		padding-bottom: 0;
+		color: var(--pico-contrast-inverse);
+	}
+	li.downloadbutton {
+		padding-top: 0;
+		padding-bottom: 0;
 	}
 </style>
