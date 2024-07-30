@@ -284,6 +284,12 @@
 	button.collectionbutton {
 		margin: 0.2em;
 	}
+	button.collectionbutton.outline:hover {
+		box-shadow: 0px 0px 1px 1px var(--pico-primary);
+	}
+	button.collectionbutton:hover {
+		box-shadow: 0px 0px 1px 1px var(--pico-secondary-hover-background);
+	}
 
 	details {
 		color: var(--pico-primary);
