@@ -12,6 +12,8 @@
 
 	// Initial state
 	let flatSchemes = undefined;
+	let aliases = undefined;
+
 	let schemesLoading = true;
 	let schemesErrored = false;
 	let query = '';
@@ -19,7 +21,7 @@
 
 	const fuseOptions = {
 		isCaseSensitive: false,
-		keys: ['schemename', 'authors', 'description'],
+		keys: ['schemename', 'authors', 'description', 'aliases'],
 		ignoreLocation: true,
 		threshold: 0.3
 	};
@@ -73,15 +75,26 @@
 
 		// Load schemes
 		try {
+			// get the index
 			const response = await fetch(
 				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json?token=GHSAT0AAAAAACNCOBUYYT5TX3KGXDHSVOQYZNKMMFA'
 			);
 			const schemes = await response.json();
 			flatSchemes = flattenedSchemeIndex(schemes);
+			// get the aliases
+			const aliasesResponse = await fetch(
+				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/aliases.json'
+			);
+			aliases = await aliasesResponse.json();
 		} catch (err) {
 			console.log(err);
 			schemesErrored = true;
 		} finally {
+			// Combine the schemes and aliases
+			for (const [alias, schemename] of Object.entries(aliases)) {
+				flatSchemes.filter((s) => s.schemename === schemename).map((s) => s.aliases.push(alias));
+			}
+
 			schemesLoading = false;
 		}
 
