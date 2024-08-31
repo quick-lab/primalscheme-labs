@@ -9,6 +9,8 @@
 
 	function generateDefaultPlot(amplicons, div, chromname, Plotly, pools, length) {
 		let npools = Math.max(...pools);
+		let uniquePools = new Set(pools);
+		pools = Array.from(uniquePools);
 
 		// Work out the number of pools
 		let fPrimerLayout = [];
@@ -19,7 +21,7 @@
 		let ampliconPointDataY = [];
 		let ampliconPointDataLabel = [];
 
-		// Handle regualr amplicons
+		// Handle regular amplicons
 		for (var i = 0; i < amplicons.length; i++) {
 			let amplicon = amplicons[i];
 			let fpLayout = {
@@ -126,7 +128,7 @@
 			},
 			yaxis: {
 				title: 'Pool',
-				range: [0.5, npools + 0.5],
+				range: [Math.min(...uniquePools) - 0.5, Math.max(...uniquePools) + 0.5],
 				tickvals: pools,
 				fixedrange: true,
 				showline: true,
@@ -135,7 +137,8 @@
 				linewidth: 2,
 				linecolor: 'black',
 				fixedrange: true,
-				title_font: { size: 18, family: 'Arial', color: 'Black' }
+				title_font: { size: 18, family: 'Arial', color: 'Black' },
+				zeroline: false
 			},
 			shapes: [...fPrimerLayout, ...rPrimerLayout, ...ampliconLineLayout]
 		};
