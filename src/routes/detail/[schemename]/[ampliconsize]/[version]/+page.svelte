@@ -67,7 +67,7 @@
 		// Load schemes
 		try {
 			const response = await fetch(
-				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json?token=GHSAT0AAAAAACNCOBUYYT5TX3KGXDHSVOQYZNKMMFA'
+				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json'
 			);
 			const schemes = await response.json();
 			flatSchemes = flattenedSchemeIndex(schemes);
