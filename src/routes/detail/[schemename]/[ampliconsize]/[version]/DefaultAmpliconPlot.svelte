@@ -265,7 +265,9 @@
 			let plotBody = document.getElementById('defaultPlot');
 			plotBody.append(PlotdivElement);
 
-			generateDefaultPlot(amplicons, PlotdivElement, chromname, Plotly, pools, length);
+			// Get the length of each msa
+			let chromLength = Math.max(...amplicons.map((a) => a.stop));
+			generateDefaultPlot(amplicons, PlotdivElement, chromname, Plotly, pools, chromLength * 1.005 );
 		}
 		loading = false;
 	});

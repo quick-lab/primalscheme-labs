@@ -355,19 +355,17 @@
 	onMount(async function () {
 		// this will try and load data from the bedfileUrl
 		let Plotly = (await import('plotly.js-dist-min')).default;
-
-		let baseurl = bedfileUrl.split('/').slice(0, -1).join('/');
-		let plotDataurl = baseurl + '/work/plotdata.json.gz';
-
-		let response;
-		let JsonData;
-
 		try {
-			response = await fetch(plotDataurl);
-			JsonData = response.blob().then(function (blob) {
-				decompressBlob(blob).then(function (json) {
-					// For each chromname
-					for (let [chromname, plotData] of Object.entries(json)) {
+
+			let baseurl = bedfileUrl.split('/').slice(0, -1).join('/');
+			let plotDataurl = baseurl + '/work/plotdata.json.gz';
+
+			let response = await fetch(plotDataurl);
+			let blob = await response.blob();
+			let json = await decompressBlob(blob);
+
+
+			for (let [chromname, plotData] of Object.entries(json)) {
 						let PlotdivElement = document.createElement('div');
 						PlotdivElement.id = chromname;
 						PlotdivElement.style.width = '100%';
@@ -377,11 +375,10 @@
 						plotBody.append(PlotdivElement);
 
 						generateAdvancedPlot(plotData, PlotdivElement, chromname, Plotly);
-					}
-				});
-				loading = false;
-				dispatch('loaded');
-			});
+					};
+
+			loading = false;
+			dispatch('loaded');
 		} catch (error) {
 			console.log(error);
 			errored = true;
@@ -391,7 +388,7 @@
 
 <div id="advancedPlot" {hidden} />
 {#if errored}
-	<p>Error loading plot</p>
+ <blockquote>Error loading Advanced plot</blockquote>
 {:else if loading}
 	<button aria-busy="true">Loading Advanced plot…</button>
 {/if}
