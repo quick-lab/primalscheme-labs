@@ -1,3 +1,9 @@
+# primalscheme-labs
+
+This is the code for the [labs.primalscheme.com](https://labs.primalscheme.com/) website. 
+
+Please be aware this is under development and things are likely to change. 
+
 # create-svelte
 
 Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
