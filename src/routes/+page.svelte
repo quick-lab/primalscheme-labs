@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
+	import { getCachedAliases, getCachedFlatSchemes } from '$lib/catalogCache.js';
 	import { base } from '$app/paths';
 
 	import Fuse from 'fuse.js';
@@ -16,6 +16,7 @@
 
 	let schemesLoading = true;
 	let schemesErrored = false;
+	let staleCatalogNotice = false;
 	let query = '';
 	let fuse = undefined;
 
@@ -26,20 +27,15 @@
 		threshold: 0.3
 	};
 
-	// Disable enter key, as the refresh wipes the URL query
-	window.addEventListener(
-		'keydown',
-		function (e) {
-			if (e.keyIdentifier == 'U+000A' || e.keyIdentifier == 'Enter' || e.keyCode == 13) {
-				if (e.target.nodeName == 'INPUT' && e.target.type == 'text') {
-					e.preventDefault();
-
-					return false;
-				}
+	// Disable enter key, as refresh can wipe URL query state.
+	const preventSearchInputSubmitOnEnter = (e) => {
+		if (e.keyIdentifier == 'U+000A' || e.keyIdentifier == 'Enter' || e.keyCode == 13) {
+			if (e.target.nodeName == 'INPUT' && e.target.type == 'text') {
+				e.preventDefault();
+				return false;
 			}
-		},
-		true
-	);
+		}
+	};
 
 	// Set the filter checkbox values
 	let defaultShowStatus = {
@@ -53,6 +49,13 @@
 
 	// Handle the URL
 	$: uriSearchParams = $page.url.searchParams;
+
+	onMount(() => {
+		window.addEventListener('keydown', preventSearchInputSubmitOnEnter, true);
+		return () => {
+			window.removeEventListener('keydown', preventSearchInputSubmitOnEnter, true);
+		};
+	});
 
 	// filter function
 	const filterFunction = (scheme, statusObj, collectionObj) => {
@@ -75,26 +78,40 @@
 
 		// Load schemes
 		try {
-			// get the index
-			const response = await fetch(
-				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json'
-			);
-			const schemes = await response.json();
-			flatSchemes = flattenedSchemeIndex(schemes);
-			// get the aliases
-			const aliasesResponse = await fetch(
-				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/aliases.json'
-			);
-			aliases = await aliasesResponse.json();
+			const [schemesResult, aliasesResult] = await Promise.all([
+				getCachedFlatSchemes(),
+				getCachedAliases()
+			]);
+			flatSchemes = schemesResult.data;
+			aliases = aliasesResult.data ?? {};
+			staleCatalogNotice = schemesResult.meta.isStale || aliasesResult.meta.isStale;
 
-			// Parse the aliases
+			const schemesByName = flatSchemes.reduce((map, scheme) => {
+				if (!map.has(scheme.schemename)) {
+					map.set(scheme.schemename, []);
+				}
+				map.get(scheme.schemename).push(scheme);
+				return map;
+			}, new Map());
+
 			for (const [alias, schemename] of Object.entries(aliases)) {
-				flatSchemes.filter((s) => s.schemename === schemename).map((s) => s.aliases.push(alias));
+				const matchingSchemes = schemesByName.get(schemename) ?? [];
+				matchingSchemes.forEach((scheme) => {
+					if (!scheme.aliases.includes(alias)) {
+						scheme.aliases.push(alias);
+					}
+				});
 			}
-			schemesLoading = false;
 		} catch (err) {
 			console.log(err);
 			schemesErrored = true;
+			flatSchemes = [];
+		} finally {
+			schemesLoading = false;
+		}
+
+		if (schemesErrored || flatSchemes === undefined) {
+			return;
 		}
 
 		fuse = new Fuse(flatSchemes, fuseOptions);
@@ -174,9 +191,9 @@
 		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		for (let [key, value] of Object.entries(showStatus)) {
 			if (defaultShowStatus[key] != value) {
-				uriSearchParams.set(encodeURIComponent(key), encodeURIComponent(value));
+				uriSearchParams.set(key, String(value));
 			} else {
-				uriSearchParams.delete(encodeURIComponent(key));
+				uriSearchParams.delete(key);
 			}
 		}
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
@@ -188,9 +205,9 @@
 		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		for (let [key, value] of Object.entries(collections)) {
 			if (value) {
-				uriSearchParams.set(encodeURIComponent(key), encodeURIComponent(value));
+				uriSearchParams.set(key, String(value));
 			} else {
-				uriSearchParams.delete(encodeURIComponent(key));
+				uriSearchParams.delete(key);
 			}
 		}
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
@@ -200,7 +217,7 @@
 
 	let updateURLQuery = async () => {
 		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
-		uriSearchParams.set('q', encodeURIComponent(query.trim()));
+		uriSearchParams.set('q', query.trim());
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
 			keepFocus: true
 		});
@@ -212,6 +229,9 @@
 {:else if schemesErrored}
 	<p>Unable to load schemes data...</p>
 {:else}
+	{#if staleCatalogNotice}
+		<p class="cache-warning">Using cached catalog data; upstream refresh failed. Data may be up to 2+ minutes old.</p>
+	{/if}
 	<form id="search form" on:submit={updateURLQuery}>
 		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
 
@@ -300,6 +320,15 @@
 	}
 	button.collectionbutton:hover {
 		box-shadow: 0px 0px 1px 1px var(--pico-secondary-hover-background);
+	}
+
+	.cache-warning {
+		margin-bottom: 1rem;
+		padding: 0.55rem 0.75rem;
+		border: 1px solid #d9b34b;
+		border-radius: 4px;
+		background: #fff8e1;
+		color: #5f4a12;
 	}
 
 	details {

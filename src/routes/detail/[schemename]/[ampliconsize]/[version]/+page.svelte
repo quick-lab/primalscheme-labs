@@ -1,8 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
-	import { error } from '@sveltejs/kit';
 	import { page } from '$app/stores';
-	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
+	import { getCachedFlatSchemes } from '$lib/catalogCache.js';
 
 	import 'giscus';
 
@@ -15,10 +14,12 @@
 	// Schemes
 	let flatSchemes = undefined;
 	let schemesErrored = false;
+	let staleCatalogNotice = false;
 
 	// Scheme
 	let scheme = undefined;
 	let schemeLoading = true;
+	let schemeNotFound = false;
 
 	// Advanced Plot
 	let showingAdvancedPlot = false;
@@ -66,14 +67,15 @@
 	onMount(async function () {
 		// Load schemes
 		try {
-			const response = await fetch(
-				'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json'
-			);
-			const schemes = await response.json();
-			flatSchemes = flattenedSchemeIndex(schemes);
+			const schemesResult = await getCachedFlatSchemes();
+			flatSchemes = schemesResult.data;
+			staleCatalogNotice = schemesResult.meta.isStale;
 		} catch (err) {
 			console.log(err);
 			schemesErrored = true;
+			schemeLoading = false;
+			infoLoading = false;
+			bedfileLoading = false;
 			return;
 		}
 
@@ -87,7 +89,11 @@
 		});
 
 		if (scheme === undefined) {
-			error(404, 'Not found');
+			schemeNotFound = true;
+			schemeLoading = false;
+			infoLoading = false;
+			bedfileLoading = false;
+			return;
 		} else {
 			schemeLoading = false;
 		}
@@ -104,9 +110,9 @@
 		}
 
 		// Primalscheme major version
-		const algoStr = info.algorithmversion;
-		const algoMatchResult = algoStr.match(/primalscheme(\d+):/);
-		primalschemeMajorVersion = algoMatchResult ? algoMatchResult[1] : null;
+		const algoStr = info?.algorithmversion;
+		const algoMatchResult = typeof algoStr === 'string' ? algoStr.match(/primalscheme(\d+):/) : null;
+		primalschemeMajorVersion = algoMatchResult ? Number.parseInt(algoMatchResult[1]) : null;
 
 		// Load bedfile
 		try {
@@ -140,6 +146,13 @@
 
 {#if schemeLoading || infoLoading || bedfileLoading}
 	<p aria-busy="true">Loading data...</p>
+{:else if schemeNotFound}
+	<dialog open>
+		<article>
+			<header>Not found</header>
+			<p>Scheme was not found in the index.</p>
+		</article>
+	</dialog>
 {:else if schemesErrored || infoErrored || bedfileErrored || referenceErrored}
 	<dialog open>
 		<article>
@@ -148,6 +161,9 @@
 		</article>
 	</dialog>
 {:else}
+	{#if staleCatalogNotice}
+		<p class="cache-warning">Using cached catalog data; upstream refresh failed. Data may be up to 2+ minutes old.</p>
+	{/if}
 	<div class="grid level">
 		<h2>{scheme.schemename} / {scheme.ampliconsize} / {scheme.schemeversion}</h2>
 		<span class="pill {scheme.status}"><strong>{scheme.status}</strong></span>
@@ -422,5 +438,14 @@
 	li.downloadbutton {
 		padding-top: 0;
 		padding-bottom: 0;
+	}
+
+	.cache-warning {
+		margin-bottom: 1rem;
+		padding: 0.55rem 0.75rem;
+		border: 1px solid #d9b34b;
+		border-radius: 4px;
+		background: #fff8e1;
+		color: #5f4a12;
 	}
 </style>

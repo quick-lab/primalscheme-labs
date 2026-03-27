@@ -10,7 +10,7 @@
 
 	let updateURLPageNum = async (newPageNum) => {
 		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
-		uriSearchParams.set(encodeURIComponent('pageNum'), encodeURIComponent(newPageNum));
+		uriSearchParams.set('pageNum', String(newPageNum));
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
 			keepFocus: true
 		});
