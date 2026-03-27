@@ -9,11 +9,13 @@
 		"test": "npm run test:integration && npm run test:unit",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
-		"test:integration": "playwright test",
+		"test:integration": "node scripts/playwright-preflight.mjs && playwright test",
+		"test:integration:external": "PLAYWRIGHT_SKIP_WEBSERVER=1 node scripts/playwright-preflight.mjs && PLAYWRIGHT_SKIP_WEBSERVER=1 playwright test",
+		"test:integration:debug": "DEBUG=pw:webserver,pw:api node scripts/playwright-preflight.mjs && DEBUG=pw:webserver,pw:api playwright test --workers=1 --reporter=line",
 		"test:unit": "vitest"
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.28.1",
+		"@playwright/test": "^1.58.2",
 		"@sveltejs/adapter-static": "^3.0.1",
 		"@sveltejs/kit": ">=2.8.3",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
