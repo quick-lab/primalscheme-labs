@@ -58,7 +58,14 @@
 	});
 
 	// filter function
-	const filterFunction = (scheme, statusObj, collectionObj) => {
+	const filterFunction = (
+		scheme,
+		statusObj,
+		collectionObj,
+		authorFacetObj,
+		speciesFacetObj,
+		ampliconSizeFacetObj
+	) => {
 		// Filter by status
 		if (!statusObj[scheme.status]) return false;
 
@@ -69,6 +76,21 @@
 			)
 		)
 			return false;
+
+		// Filter by author (OR within facet)
+		if (Object.values(authorFacetObj).some(Boolean)) {
+			if (!scheme.authors.some((author) => authorFacetObj[author])) return false;
+		}
+
+		// Filter by species (OR within facet)
+		if (Object.values(speciesFacetObj).some(Boolean)) {
+			if (!scheme.species.some((species) => speciesFacetObj[species])) return false;
+		}
+
+		// Filter by amplicon size (OR within facet)
+		if (Object.values(ampliconSizeFacetObj).some(Boolean)) {
+			if (!ampliconSizeFacetObj[String(scheme.ampliconsize)]) return false;
+		}
 		return true;
 	};
 
@@ -133,6 +155,28 @@
 			});
 		}
 
+		// Build additional facet options
+		{
+			let authorOptions = [...new Set(flatSchemes.flatMap((scheme) => scheme.authors))].sort();
+			authorOptions.forEach((author) => {
+				if (authors[author] === undefined) authors[author] = false;
+			});
+		}
+		{
+			let speciesOptions = [...new Set(flatSchemes.flatMap((scheme) => scheme.species))].sort();
+			speciesOptions.forEach((species) => {
+				if (specieses[species] === undefined) specieses[species] = false;
+			});
+		}
+		{
+			let sizeOptions = [...new Set(flatSchemes.map((scheme) => String(scheme.ampliconsize)))].sort(
+				(a, b) => Number.parseInt(a) - Number.parseInt(b)
+			);
+			sizeOptions.forEach((size) => {
+				if (ampliconSizes[size] === undefined) ampliconSizes[size] = false;
+			});
+		}
+
 		// Parse the URL
 		for (let [key, value] of $page.url.searchParams.entries()) {
 			// Set the filter checkbox values
@@ -143,6 +187,15 @@
 			if (collections.hasOwnProperty(key)) {
 				collections[key] = value === 'true';
 			}
+		}
+		for (const author of $page.url.searchParams.getAll('author')) {
+			if (authors.hasOwnProperty(author)) authors[author] = true;
+		}
+		for (const species of $page.url.searchParams.getAll('species')) {
+			if (specieses.hasOwnProperty(species)) specieses[species] = true;
+		}
+		for (const size of $page.url.searchParams.getAll('ampliconsize')) {
+			if (ampliconSizes.hasOwnProperty(size)) ampliconSizes[size] = true;
 		}
 	});
 
@@ -157,16 +210,19 @@
 
 	// Get the collection names
 	let collections = {};
+	let authors = {};
+	let specieses = {};
+	let ampliconSizes = {};
 
 	// Pages
-	const pageSize = 25;
+	const pageSize = 100;
 	$: pageIndex = pageNum - 1;
 	$: pageCount = Math.ceil(filteredFlatSearchResult?.length / pageSize);
 	$: pageNum = uriSearchParams.get('pageNum') || 1;
 
 	// Filter the search results
 	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
-		return filterFunction(item.item, showStatus, collections);
+		return filterFunction(item.item, showStatus, collections, authors, specieses, ampliconSizes);
 	});
 
 	$: searchResult = filteredFlatSearchResult?.slice(
@@ -196,6 +252,7 @@
 				uriSearchParams.delete(key);
 			}
 		}
+		uriSearchParams.delete('pageNum');
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
 			keepFocus: true
 		});
@@ -210,6 +267,21 @@
 				uriSearchParams.delete(key);
 			}
 		}
+		uriSearchParams.delete('pageNum');
+		await goto(`${base}/?${uriSearchParams.toString()}`, {
+			keepFocus: true
+		});
+	};
+
+	let updateURLFacet = async (paramName, facetObj) => {
+		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
+		uriSearchParams.delete(paramName);
+		Object.entries(facetObj)
+			.filter(([, value]) => value)
+			.map(([key]) => key)
+			.sort()
+			.forEach((value) => uriSearchParams.append(paramName, value));
+		uriSearchParams.delete('pageNum');
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
 			keepFocus: true
 		});
@@ -218,6 +290,25 @@
 	let updateURLQuery = async () => {
 		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		uriSearchParams.set('q', query.trim());
+		uriSearchParams.delete('pageNum');
+		await goto(`${base}/?${uriSearchParams.toString()}`, {
+			keepFocus: true
+		});
+	};
+
+	let clearSidebarFilters = async () => {
+		showStatus = { ...defaultShowStatus };
+		Object.keys(collections).forEach((key) => (collections[key] = false));
+		Object.keys(authors).forEach((key) => (authors[key] = false));
+		Object.keys(specieses).forEach((key) => (specieses[key] = false));
+		Object.keys(ampliconSizes).forEach((key) => (ampliconSizes[key] = false));
+		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
+		Object.keys(defaultShowStatus).forEach((key) => uriSearchParams.delete(key));
+		Object.keys(collections).forEach((key) => uriSearchParams.delete(key));
+		uriSearchParams.delete('author');
+		uriSearchParams.delete('species');
+		uriSearchParams.delete('ampliconsize');
+		uriSearchParams.delete('pageNum');
 		await goto(`${base}/?${uriSearchParams.toString()}`, {
 			keepFocus: true
 		});
@@ -234,12 +325,10 @@
 	{/if}
 	<form id="search form" on:submit={updateURLQuery}>
 		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
-
 		<details open>
 			<summary><h5>Advanced Search</h5></summary>
 			<fieldset>
 				<div class="grid">
-					<!-- Status filter -->
 					<div>
 						<legend><h6>Status</h6></legend>
 						{#each Object.entries(showStatus) as [status, value]}
@@ -255,7 +344,7 @@
 							</label>
 						{/each}
 					</div>
-					<!-- Collection filter -->
+
 					<div>
 						<legend><h6>Collection</h6></legend>
 						<div>
@@ -289,37 +378,92 @@
 
 	<hr />
 
-	{#if searchResult.length > 0}
-		<table>
-			<tbody>
-				{#each searchResult as result}
-					<ResultsRow scheme={result.item} {query} />
-				{/each}
-			</tbody>
-		</table>
-	{:else}
-		<p>No results</p>
-	{/if}
-	<Pagination
-		{pageCount}
-		{pageNum}
-		resultCount={filteredFlatSearchResult.length}
-		pageSize={searchResult.length}
-	/>
+	<div class="search-layout">
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<h5>Filter Results</h5>
+				<button type="button" class="outline compact" on:click={clearSidebarFilters}>Clear all</button>
+			</div>
+
+			<div class="facet">
+				<legend><h6>Amplicon Size</h6></legend>
+				<div class="facet-scroll">
+					{#each Object.entries(ampliconSizes) as [size, value]}
+						<label class="checkbox-row">
+							<input
+								type="checkbox"
+								bind:checked={ampliconSizes[size]}
+								on:change={() => updateURLFacet('ampliconsize', ampliconSizes)}
+							/>
+							<span>{size}</span>
+						</label>
+					{/each}
+				</div>
+			</div>
+
+			<div class="facet">
+				<legend><h6>Species</h6></legend>
+				<div class="facet-scroll">
+					{#each Object.entries(specieses) as [species, value]}
+						<label class="checkbox-row">
+							<input
+								type="checkbox"
+								bind:checked={specieses[species]}
+								on:change={() => updateURLFacet('species', specieses)}
+							/>
+							<span>{species}</span>
+						</label>
+					{/each}
+				</div>
+			</div>
+
+			<div class="facet">
+				<legend><h6>Authors</h6></legend>
+				<div class="facet-scroll">
+					{#each Object.entries(authors) as [author, value]}
+						<label class="checkbox-row">
+							<input
+								type="checkbox"
+								bind:checked={authors[author]}
+								on:change={() => updateURLFacet('author', authors)}
+							/>
+							<span>{author}</span>
+						</label>
+					{/each}
+				</div>
+			</div>
+		</aside>
+
+		<div>
+			{#if searchResult.length > 0}
+				<table>
+					<tbody>
+						{#each searchResult as result}
+							<ResultsRow scheme={result.item} {query} />
+						{/each}
+					</tbody>
+				</table>
+			{:else}
+				<p>No results</p>
+			{/if}
+			<Pagination
+				{pageCount}
+				{pageNum}
+				resultCount={filteredFlatSearchResult.length}
+				pageSize={searchResult.length}
+			/>
+		</div>
+	</div>
 {/if}
 
 <style>
 	form {
-		margin-bottom: 2rem;
-	}
-	button.collectionbutton {
-		margin: 0.2em;
-	}
-	button.collectionbutton.outline:hover {
-		box-shadow: 0px 0px 1px 1px var(--pico-primary);
-	}
-	button.collectionbutton:hover {
-		box-shadow: 0px 0px 1px 1px var(--pico-secondary-hover-background);
+		margin-bottom: 1.5rem;
+		padding: 1.2rem 1.25rem;
+		background: #ffffff;
+		border: 1px solid rgba(95, 107, 119, 0.2);
+		border-radius: 8px;
+		box-shadow: 0 1px 5px rgba(31, 41, 51, 0.06);
 	}
 
 	.cache-warning {
@@ -331,10 +475,114 @@
 		color: #5f4a12;
 	}
 
+	input[type='text'] {
+		border-radius: 4px;
+	}
+
 	details {
 		color: var(--pico-primary);
 	}
-	label:hover {
+
+	hr {
+		border-color: rgba(95, 107, 119, 0.2);
+		margin-block: 1.25rem 1.1rem;
+	}
+
+	button.collectionbutton {
+		margin: 0.22rem;
+		border-radius: 4px;
+		font-weight: 500;
+		letter-spacing: 0.01em;
+	}
+
+	button.collectionbutton.outline:hover {
+		box-shadow: none;
+	}
+
+	button.collectionbutton:hover {
+		box-shadow: none;
+	}
+
+	.search-layout label:hover {
 		color: var(--pico-secondary);
+	}
+
+	table {
+		background: transparent;
+		border-collapse: separate;
+		border-spacing: 0 0.35rem;
+	}
+
+	.search-layout {
+		display: grid;
+		grid-template-columns: 280px minmax(0, 1fr);
+		gap: 1rem;
+		align-items: start;
+	}
+
+	.sidebar {
+		position: sticky;
+		top: 88px;
+		background: #ffffff;
+		border: 1px solid rgba(95, 107, 119, 0.2);
+		border-radius: 8px;
+		padding: 0.9rem;
+		max-height: calc(100vh - 110px);
+		overflow: auto;
+	}
+
+	.sidebar-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.4rem;
+		margin-bottom: 0.7rem;
+	}
+
+	.sidebar-header h5 {
+		margin: 0;
+	}
+
+	.sidebar legend {
+		margin-bottom: 0;
+	}
+
+	.facet + .facet {
+		margin-top: 1rem;
+		padding-top: 0.85rem;
+		border-top: 1px solid rgba(95, 107, 119, 0.18);
+	}
+
+	.facet h6 {
+		margin-bottom: 0.45rem;
+	}
+
+	.facet-scroll {
+		max-height: 170px;
+		overflow: auto;
+		padding-right: 0.25rem;
+	}
+
+	.checkbox-row {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		margin-bottom: 0.22rem;
+	}
+
+	button.compact {
+		padding: 0.25rem 0.55rem;
+		font-size: 0.8rem;
+	}
+
+	@media (max-width: 980px) {
+		.search-layout {
+			grid-template-columns: 1fr;
+		}
+
+		.sidebar {
+			position: static;
+			max-height: none;
+		}
 	}
 </style>
