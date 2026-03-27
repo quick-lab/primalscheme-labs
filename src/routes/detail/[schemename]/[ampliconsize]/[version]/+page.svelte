@@ -1,6 +1,5 @@
 <script>
 	import { onMount } from 'svelte';
-	import { error } from '@sveltejs/kit';
 	import { page } from '$app/stores';
 	import { flattenedSchemeIndex } from '$lib/flattenedSchemes.js';
 
@@ -19,6 +18,7 @@
 	// Scheme
 	let scheme = undefined;
 	let schemeLoading = true;
+	let schemeNotFound = false;
 
 	// Advanced Plot
 	let showingAdvancedPlot = false;
@@ -74,6 +74,9 @@
 		} catch (err) {
 			console.log(err);
 			schemesErrored = true;
+			schemeLoading = false;
+			infoLoading = false;
+			bedfileLoading = false;
 			return;
 		}
 
@@ -87,7 +90,11 @@
 		});
 
 		if (scheme === undefined) {
-			error(404, 'Not found');
+			schemeNotFound = true;
+			schemeLoading = false;
+			infoLoading = false;
+			bedfileLoading = false;
+			return;
 		} else {
 			schemeLoading = false;
 		}
@@ -104,9 +111,9 @@
 		}
 
 		// Primalscheme major version
-		const algoStr = info.algorithmversion;
-		const algoMatchResult = algoStr.match(/primalscheme(\d+):/);
-		primalschemeMajorVersion = algoMatchResult ? algoMatchResult[1] : null;
+		const algoStr = info?.algorithmversion;
+		const algoMatchResult = typeof algoStr === 'string' ? algoStr.match(/primalscheme(\d+):/) : null;
+		primalschemeMajorVersion = algoMatchResult ? Number.parseInt(algoMatchResult[1]) : null;
 
 		// Load bedfile
 		try {
@@ -140,6 +147,13 @@
 
 {#if schemeLoading || infoLoading || bedfileLoading}
 	<p aria-busy="true">Loading data...</p>
+{:else if schemeNotFound}
+	<dialog open>
+		<article>
+			<header>Not found</header>
+			<p>Scheme was not found in the index.</p>
+		</article>
+	</dialog>
 {:else if schemesErrored || infoErrored || bedfileErrored || referenceErrored}
 	<dialog open>
 		<article>

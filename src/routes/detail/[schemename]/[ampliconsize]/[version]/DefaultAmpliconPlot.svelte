@@ -6,6 +6,7 @@
 
 	let bedfileText = false;
 	let loading = true;
+	let errored = false;
 
 	function generateDefaultPlot(amplicons, div, chromname, Plotly, pools, length) {
 		let npools = Math.max(...pools);
@@ -150,130 +151,134 @@
 	}
 	// Log data to see if working
 	onMount(async function () {
-		// Load the bedfile
-		let Plotly = (await import('plotly.js-dist-min')).default;
-		let response;
-
 		try {
-			response = await fetch(bedfileUrl);
-		} catch (error) {
-			console.log(response);
-		}
-
-		bedfileText = await response.text();
-
-		// Determine the number of pools
-		let pools = [];
-		let length = 0;
-
-		// Parse the 7 col bedfile data into primers
-		let primerData = [];
-		let headerData = [];
-		let lines = bedfileText.split('\n');
-		for (let i = 0; i < lines.length; i++) {
-			let line = lines[i];
-			// Skip Header lines
-			if (line.startsWith('#')) {
-				headerData.push(line);
-				continue;
+			// Load the bedfile
+			let Plotly = (await import('plotly.js-dist-min')).default;
+			const response = await fetch(bedfileUrl);
+			if (!response.ok) {
+				throw new Error(`Unable to load bedfile: ${response.status}`);
 			}
+			bedfileText = await response.text();
 
-			let fields = line.split('\t');
-			// Skip empty lines
-			if (fields.length < 6) {
-				continue;
-			}
-			let primer = {
-				chromname: fields[0],
-				start: parseInt(fields[1]),
-				stop: parseInt(fields[2]),
-				primername: fields[3],
-				pool: parseInt(fields[4]),
-				strand: fields[5],
-				amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
-			};
-			primerData.push(primer);
+			// Determine the number of pools
+			let pools = [];
+			let length = 0;
 
-			// Make a not of all the pools
-			if (!pools.includes(primer.pool)) {
-				pools.push(primer.pool);
-			}
-			// Make a note of the length
-			if (primer.stop > length) {
-				length = primer.stop;
-			}
-		}
-
-		let chromnameToAmplicons = {};
-		// Create each msa by grouping primers by chromname
-		let msaPrimers = primerData.reduce((acc, primer) => {
-			if (!acc[primer.chromname]) {
-				acc[primer.chromname] = [];
-			}
-			acc[primer.chromname].push(primer);
-			return acc;
-		}, {});
-
-		for (let chromname in msaPrimers) {
-			let msaData = msaPrimers[chromname];
-			// Create amplicons by combining primers by primernumber
-			let ampliconPrimers = msaData.reduce((acc, primer) => {
-				if (!acc[primer.amplicon_number]) {
-					acc[primer.amplicon_number] = [];
+			// Parse the 7 col bedfile data into primers
+			let primerData = [];
+			let headerData = [];
+			let lines = bedfileText.split('\n');
+			for (let i = 0; i < lines.length; i++) {
+				let line = lines[i];
+				// Skip Header lines
+				if (line.startsWith('#')) {
+					headerData.push(line);
+					continue;
 				}
-				acc[primer.amplicon_number].push(primer);
+
+				let fields = line.split('\t');
+				// Skip empty lines
+				if (fields.length < 6) {
+					continue;
+				}
+				let primer = {
+					chromname: fields[0],
+					start: parseInt(fields[1]),
+					stop: parseInt(fields[2]),
+					primername: fields[3],
+					pool: parseInt(fields[4]),
+					strand: fields[5],
+					amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
+				};
+				primerData.push(primer);
+
+				// Make a not of all the pools
+				if (!pools.includes(primer.pool)) {
+					pools.push(primer.pool);
+				}
+				// Make a note of the length
+				if (primer.stop > length) {
+					length = primer.stop;
+				}
+			}
+
+			let chromnameToAmplicons = {};
+			// Create each msa by grouping primers by chromname
+			let msaPrimers = primerData.reduce((acc, primer) => {
+				if (!acc[primer.chromname]) {
+					acc[primer.chromname] = [];
+				}
+				acc[primer.chromname].push(primer);
 				return acc;
 			}, {});
-			// Generate amplicon data
-			let msaAmplicons = [];
-			for (let ampliconNumber in ampliconPrimers) {
-				// Group primers by strand
-				let primerFR = ampliconPrimers[ampliconNumber].reduce((acc, primer) => {
-					if (!acc[primer.strand]) {
-						acc[primer.strand] = [];
+
+			for (let chromname in msaPrimers) {
+				let msaData = msaPrimers[chromname];
+				// Create amplicons by combining primers by primernumber
+				let ampliconPrimers = msaData.reduce((acc, primer) => {
+					if (!acc[primer.amplicon_number]) {
+						acc[primer.amplicon_number] = [];
 					}
-					acc[primer.strand].push(primer);
+					acc[primer.amplicon_number].push(primer);
 					return acc;
 				}, {});
+				// Generate amplicon data
+				let msaAmplicons = [];
+				for (let ampliconNumber in ampliconPrimers) {
+					// Group primers by strand
+					let primerFR = ampliconPrimers[ampliconNumber].reduce((acc, primer) => {
+						if (!acc[primer.strand]) {
+							acc[primer.strand] = [];
+						}
+						acc[primer.strand].push(primer);
+						return acc;
+					}, {});
 
-				let amplicon = {
-					ampliconNumber: ampliconNumber,
-					pool: primerFR['+'][0].pool,
-					forwardPrimers: primerFR['+'],
-					reversePrimers: primerFR['-'],
-					start: Math.min(...primerFR['+'].map(({ start }) => start)),
-					stop: Math.max(...primerFR['-'].map(({ stop }) => stop)),
-					coverageStart: Math.min(...primerFR['+'].map(({ stop }) => stop)),
-					coverageStop: Math.max(...primerFR['-'].map(({ start }) => start)),
-					amplicionUUID: primerFR['+'][0].primername.split('_')[0]
-				};
-				msaAmplicons.push(amplicon);
+					let amplicon = {
+						ampliconNumber: ampliconNumber,
+						pool: primerFR['+'][0].pool,
+						forwardPrimers: primerFR['+'],
+						reversePrimers: primerFR['-'],
+						start: Math.min(...primerFR['+'].map(({ start }) => start)),
+						stop: Math.max(...primerFR['-'].map(({ stop }) => stop)),
+						coverageStart: Math.min(...primerFR['+'].map(({ stop }) => stop)),
+						coverageStop: Math.max(...primerFR['-'].map(({ start }) => start)),
+						amplicionUUID: primerFR['+'][0].primername.split('_')[0]
+					};
+					msaAmplicons.push(amplicon);
+				}
+				chromnameToAmplicons[chromname] = msaAmplicons;
 			}
-			chromnameToAmplicons[chromname] = msaAmplicons;
+
+			// For each msa create the plotly data
+			for (let chromname in chromnameToAmplicons) {
+				let amplicons = chromnameToAmplicons[chromname];
+
+				// Create a new div for the plots
+				let PlotdivElement = document.createElement('div');
+				PlotdivElement.id = chromname;
+				PlotdivElement.style.width = '100%';
+				PlotdivElement.style.height = '100%';
+
+				let plotBody = document.getElementById('defaultPlot');
+				plotBody.append(PlotdivElement);
+
+				// Get the length of each msa
+				let chromLength = Math.max(...amplicons.map((a) => a.stop));
+				generateDefaultPlot(amplicons, PlotdivElement, chromname, Plotly, pools, chromLength * 1.005);
+			}
+		} catch (error) {
+			console.error(error);
+			errored = true;
+		} finally {
+			loading = false;
 		}
-
-		// For each msa create the plotly data
-		for (let chromname in chromnameToAmplicons) {
-			let amplicons = chromnameToAmplicons[chromname];
-
-			// Create a new div for the plots
-			let PlotdivElement = document.createElement('div');
-			PlotdivElement.id = chromname;
-			PlotdivElement.style.width = '100%';
-			PlotdivElement.style.height = '100%';
-
-			let plotBody = document.getElementById('defaultPlot');
-			plotBody.append(PlotdivElement);
-
-			// Get the length of each msa
-			let chromLength = Math.max(...amplicons.map((a) => a.stop));
-			generateDefaultPlot(amplicons, PlotdivElement, chromname, Plotly, pools, chromLength * 1.005 );
-		}
-		loading = false;
 	});
 </script>
 
-{#if loading}
+{#if errored}
+	<blockquote>Error loading basic plot</blockquote>
+{:else if loading}
 	<button aria-busy="true">Loading basic plot…</button>
 {/if}
 <div id="defaultPlot" {hidden} />
