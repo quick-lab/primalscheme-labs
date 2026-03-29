@@ -22,7 +22,7 @@
 
 	const fuseOptions = {
 		isCaseSensitive: false,
-		keys: ['schemename', 'authors', 'description', 'aliases'],
+		keys: ['schemename', 'authors', 'species', 'description', 'aliases'],
 		ignoreLocation: true,
 		threshold: 0.3
 	};
@@ -92,6 +92,10 @@
 			if (!ampliconSizeFacetObj[String(scheme.ampliconsize)]) return false;
 		}
 		return true;
+	};
+
+	const facetEntriesForCurrentContext = (facetObj, availableKeys) => {
+		return Object.entries(facetObj).filter(([key, isSelected]) => isSelected || availableKeys.has(key));
 	};
 
 	onMount(async function () {
@@ -224,6 +228,22 @@
 	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
 		return filterFunction(item.item, showStatus, collections, authors, specieses, ampliconSizes);
 	});
+
+	// Sidebar facets should reflect the current search + top filters (status/collection),
+	// and not disappear because of other sidebar facet selections.
+	// Keep selected values visible so users can always deselect them.
+	$: facetAvailabilityBase = flatSearchResult?.filter((item) =>
+		filterFunction(item.item, showStatus, collections, {}, {}, {})
+	);
+	$: availableAmpliconSizes = new Set(
+		facetAvailabilityBase?.map((item) => String(item.item.ampliconsize)) ?? []
+	);
+	$: visibleAmpliconSizeEntries = facetEntriesForCurrentContext(ampliconSizes, availableAmpliconSizes);
+
+	$: visibleSpeciesEntries = Object.entries(specieses);
+
+	$: availableAuthors = new Set(facetAvailabilityBase?.flatMap((item) => item.item.authors) ?? []);
+	$: visibleAuthorEntries = facetEntriesForCurrentContext(authors, availableAuthors);
 
 	$: searchResult = filteredFlatSearchResult?.slice(
 		pageIndex * pageSize,
@@ -388,12 +408,15 @@
 			<div class="facet">
 				<legend><h6>Amplicon Size</h6></legend>
 				<div class="facet-scroll">
-					{#each Object.entries(ampliconSizes) as [size, value]}
+					{#each visibleAmpliconSizeEntries as [size, value]}
 						<label class="checkbox-row">
 							<input
 								type="checkbox"
 								bind:checked={ampliconSizes[size]}
-								on:change={() => updateURLFacet('ampliconsize', ampliconSizes)}
+								on:change={() => {
+									ampliconSizes = { ...ampliconSizes };
+									updateURLFacet('ampliconsize', ampliconSizes);
+								}}
 							/>
 							<span>{size}</span>
 						</label>
@@ -404,12 +427,15 @@
 			<div class="facet">
 				<legend><h6>Species</h6></legend>
 				<div class="facet-scroll">
-					{#each Object.entries(specieses) as [species, value]}
+					{#each visibleSpeciesEntries as [species, value]}
 						<label class="checkbox-row">
 							<input
 								type="checkbox"
 								bind:checked={specieses[species]}
-								on:change={() => updateURLFacet('species', specieses)}
+								on:change={() => {
+									specieses = { ...specieses };
+									updateURLFacet('species', specieses);
+								}}
 							/>
 							<span>{species}</span>
 						</label>
@@ -420,12 +446,15 @@
 			<div class="facet">
 				<legend><h6>Authors</h6></legend>
 				<div class="facet-scroll">
-					{#each Object.entries(authors) as [author, value]}
+					{#each visibleAuthorEntries as [author, value]}
 						<label class="checkbox-row">
 							<input
 								type="checkbox"
 								bind:checked={authors[author]}
-								on:change={() => updateURLFacet('author', authors)}
+								on:change={() => {
+									authors = { ...authors };
+									updateURLFacet('author', authors);
+								}}
 							/>
 							<span>{author}</span>
 						</label>
@@ -541,6 +570,13 @@
 
 	.sidebar-header h5 {
 		margin: 0;
+		line-height: 1.15;
+	}
+
+	.sidebar-header button {
+		margin: 0;
+		align-self: center;
+		line-height: 1.15;
 	}
 
 	.sidebar legend {
