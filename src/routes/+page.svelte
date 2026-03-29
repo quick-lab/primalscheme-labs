@@ -94,8 +94,30 @@
 		return true;
 	};
 
-	const facetEntriesForCurrentContext = (facetObj, availableKeys) => {
-		return Object.entries(facetObj).filter(([key, isSelected]) => isSelected || availableKeys.has(key));
+	const toStringArray = (value) => {
+		if (Array.isArray(value)) return value.map((item) => String(item));
+		if (value != null) return [String(value)];
+		return [];
+	};
+
+	const buildCountMap = (items, accessor) => {
+		const counts = new Map();
+		for (const entry of items ?? []) {
+			for (const key of accessor(entry.item)) {
+				counts.set(key, (counts.get(key) ?? 0) + 1);
+			}
+		}
+		return counts;
+	};
+
+	const facetRowsForCurrentContext = (facetObj, countMap) => {
+		return Object.entries(facetObj)
+			.map(([key, selected]) => ({
+				key,
+				selected,
+				count: countMap.get(key) ?? 0
+			}))
+			.filter((row) => row.selected || row.count > 0);
 	};
 
 	onMount(async function () {
@@ -229,21 +251,32 @@
 		return filterFunction(item.item, showStatus, collections, authors, specieses, ampliconSizes);
 	});
 
-	// Sidebar facets should reflect the current search + top filters (status/collection),
-	// and not disappear because of other sidebar facet selections.
+	// Sidebar facets should reflect the current search + all active filters except themselves.
 	// Keep selected values visible so users can always deselect them.
-	$: facetAvailabilityBase = flatSearchResult?.filter((item) =>
-		filterFunction(item.item, showStatus, collections, {}, {}, {})
+	$: authorFacetAvailabilityBase = flatSearchResult?.filter((item) =>
+		filterFunction(item.item, showStatus, collections, {}, specieses, ampliconSizes)
 	);
-	$: availableAmpliconSizes = new Set(
-		facetAvailabilityBase?.map((item) => String(item.item.ampliconsize)) ?? []
+	$: speciesFacetAvailabilityBase = flatSearchResult?.filter((item) =>
+		filterFunction(item.item, showStatus, collections, authors, {}, ampliconSizes)
 	);
-	$: visibleAmpliconSizeEntries = facetEntriesForCurrentContext(ampliconSizes, availableAmpliconSizes);
+	$: ampliconFacetAvailabilityBase = flatSearchResult?.filter((item) =>
+		filterFunction(item.item, showStatus, collections, authors, specieses, {})
+	);
 
-	$: visibleSpeciesEntries = Object.entries(specieses);
+	$: ampliconCounts = buildCountMap(ampliconFacetAvailabilityBase, (scheme) => [
+		String(scheme.ampliconsize)
+	]);
+	$: visibleAmpliconSizeRows = facetRowsForCurrentContext(ampliconSizes, ampliconCounts);
 
-	$: availableAuthors = new Set(facetAvailabilityBase?.flatMap((item) => item.item.authors) ?? []);
-	$: visibleAuthorEntries = facetEntriesForCurrentContext(authors, availableAuthors);
+	$: speciesCounts = buildCountMap(speciesFacetAvailabilityBase, (scheme) =>
+		toStringArray(scheme.species)
+	);
+	$: visibleSpeciesRows = facetRowsForCurrentContext(specieses, speciesCounts);
+
+	$: authorCounts = buildCountMap(authorFacetAvailabilityBase, (scheme) =>
+		toStringArray(scheme.authors)
+	);
+	$: visibleAuthorRows = facetRowsForCurrentContext(authors, authorCounts);
 
 	$: searchResult = filteredFlatSearchResult?.slice(
 		pageIndex * pageSize,
@@ -341,7 +374,9 @@
 	<p>Unable to load schemes data...</p>
 {:else}
 	{#if staleCatalogNotice}
-		<p class="cache-warning">Using cached catalog data; upstream refresh failed. Data may be up to 2+ minutes old.</p>
+		<p class="cache-warning">
+			Using cached catalog data; upstream refresh failed. Data may be up to 2+ minutes old.
+		</p>
 	{/if}
 	<form id="search form" on:submit={updateURLQuery}>
 		<input type="text" placeholder="Search..." bind:value={query} on:keyup={debouncedSubmit} />
@@ -402,23 +437,25 @@
 		<aside class="sidebar">
 			<div class="sidebar-header">
 				<h5>Filter Results</h5>
-				<button type="button" class="outline compact" on:click={clearSidebarFilters}>Clear all</button>
+				<button type="button" class="outline compact" on:click={clearSidebarFilters}
+					>Clear all</button
+				>
 			</div>
 
 			<div class="facet">
 				<legend><h6>Amplicon Size</h6></legend>
 				<div class="facet-scroll">
-					{#each visibleAmpliconSizeEntries as [size, value]}
+					{#each visibleAmpliconSizeRows as row}
 						<label class="checkbox-row">
 							<input
 								type="checkbox"
-								bind:checked={ampliconSizes[size]}
+								bind:checked={ampliconSizes[row.key]}
 								on:change={() => {
 									ampliconSizes = { ...ampliconSizes };
 									updateURLFacet('ampliconsize', ampliconSizes);
 								}}
 							/>
-							<span>{size}</span>
+							<span>{row.key} ({row.count})</span>
 						</label>
 					{/each}
 				</div>
@@ -427,17 +464,17 @@
 			<div class="facet">
 				<legend><h6>Species</h6></legend>
 				<div class="facet-scroll">
-					{#each visibleSpeciesEntries as [species, value]}
+					{#each visibleSpeciesRows as row}
 						<label class="checkbox-row">
 							<input
 								type="checkbox"
-								bind:checked={specieses[species]}
+								bind:checked={specieses[row.key]}
 								on:change={() => {
 									specieses = { ...specieses };
 									updateURLFacet('species', specieses);
 								}}
 							/>
-							<span>{species}</span>
+							<span>{row.key} ({row.count})</span>
 						</label>
 					{/each}
 				</div>
@@ -446,17 +483,17 @@
 			<div class="facet">
 				<legend><h6>Authors</h6></legend>
 				<div class="facet-scroll">
-					{#each visibleAuthorEntries as [author, value]}
+					{#each visibleAuthorRows as row}
 						<label class="checkbox-row">
 							<input
 								type="checkbox"
-								bind:checked={authors[author]}
+								bind:checked={authors[row.key]}
 								on:change={() => {
 									authors = { ...authors };
 									updateURLFacet('author', authors);
 								}}
 							/>
-							<span>{author}</span>
+							<span>{row.key} ({row.count})</span>
 						</label>
 					{/each}
 				</div>
