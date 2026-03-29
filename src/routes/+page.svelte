@@ -501,7 +501,7 @@
 		</aside>
 
 		<div>
-			{#if searchResult.length > 0}
+			{#if (searchResult?.length ?? 0) > 0}
 				<table>
 					<tbody>
 						{#each searchResult as result}
@@ -515,7 +515,7 @@
 			<Pagination
 				{pageCount}
 				{pageNum}
-				resultCount={filteredFlatSearchResult.length}
+				resultCount={filteredFlatSearchResult?.length ?? 0}
 				pageSize={searchResult.length}
 			/>
 		</div>

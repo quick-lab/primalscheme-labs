@@ -200,6 +200,7 @@
 		// Load info.json
 		try {
 			const response = await fetch(scheme.info_json_url);
+			if (!response.ok) throw new Error(`Failed to fetch info.json: ${response.status}`);
 			info = await response.json();
 		} catch (err) {
 			console.error(err);
@@ -216,6 +217,7 @@
 		// Load bedfile
 		try {
 			let response = await fetch(scheme.primer_bed_url);
+			if (!response.ok) throw new Error(`Failed to fetch primer.bed: ${response.status}`);
 			rawBedfile = await response.text();
 
 			bedfile = rawBedfile
@@ -233,6 +235,7 @@
 		referenceLoading = true;
 		try {
 			let response = await fetch(scheme.reference_fasta_url);
+			if (!response.ok) throw new Error(`Failed to fetch reference.fasta: ${response.status}`);
 			reference = await response.text();
 		} catch (err) {
 			console.error(err);
@@ -554,20 +557,18 @@
 						{/if}
 					{/each}
 					<table>
-						<pre>
 						<tbody>
 						<!-- Write the bed file -->
 						{#each bedfile as bedline}
-									{#if !bedline[0].startsWith('#')}
-										<tr>
+							{#if !bedline[0].startsWith('#')}
+								<tr>
 									{#each bedline as column}
-												<td>{column}</td>
-											{/each}
+										<td>{column}</td>
+									{/each}
 								</tr>
-									{/if}
-								{/each}
+							{/if}
+						{/each}
 						</tbody>
-					</pre>
 					</table>
 				</figure>
 			{:else}
