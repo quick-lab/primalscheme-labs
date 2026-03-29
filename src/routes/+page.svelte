@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { getCachedAliases, getCachedFlatSchemes } from '$lib/catalogCache.js';
 	import { base } from '$app/paths';
 
@@ -283,6 +284,12 @@
 		pageIndex * pageSize + pageSize
 	);
 
+	let resultKey = 0;
+	$: {
+		filteredFlatSearchResult;
+		resultKey += 1;
+	}
+
 	let timer;
 	const debouncedSubmit = async () => {
 		clearTimeout(timer);
@@ -501,23 +508,27 @@
 		</aside>
 
 		<div>
-			{#if (searchResult?.length ?? 0) > 0}
-				<table>
-					<tbody>
-						{#each searchResult as result}
-							<ResultsRow scheme={result.item} {query} />
-						{/each}
-					</tbody>
-				</table>
-			{:else}
-				<p>No results</p>
-			{/if}
-			<Pagination
-				{pageCount}
-				{pageNum}
-				resultCount={filteredFlatSearchResult?.length ?? 0}
-				pageSize={searchResult.length}
-			/>
+			{#key resultKey}
+				<div in:fade={{ duration: 150 }}>
+					{#if (searchResult?.length ?? 0) > 0}
+						<table>
+							<tbody>
+								{#each searchResult as result}
+									<ResultsRow scheme={result.item} {query} />
+								{/each}
+							</tbody>
+						</table>
+					{:else}
+						<p>No results</p>
+					{/if}
+					<Pagination
+						{pageCount}
+						{pageNum}
+						resultCount={filteredFlatSearchResult?.length ?? 0}
+						pageSize={searchResult.length}
+					/>
+				</div>
+			{/key}
 		</div>
 	</div>
 {/if}
