@@ -1,3 +1,7 @@
+<script>
+	import { GITHUB_URL } from '$lib/config.js';
+</script>
+
 <main>
 	<section>
 		<hgroup>
@@ -15,7 +19,7 @@
 			<p>
 				Use <a href="https://github.com/ChrisgKent/primal-page">Primal-page</a> to generate metadata
 				files and repository structure for your scheme. Then submit a pull request to
-				<a href="https://github.com/quick-lab/primerschemes"> quick-lab/primerschemes</a>
+				<a href={GITHUB_URL}> quick-lab/primerschemes</a>
 			</p>
 			<h6>Contact us</h6>
 			<p>

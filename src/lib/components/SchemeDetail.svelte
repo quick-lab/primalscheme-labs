@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import AmpliconPlot from '$lib/components/DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from '$lib/components/AdvancedPlot.svelte';
+	import { GITHUB_URL, GITHUB_API_URL, PRIMER_CLASS, GISCUS_REPO, GISCUS_REPO_ID, GISCUS_CATEGORY, GISCUS_CATEGORY_ID } from '$lib/config.js';
 	import 'giscus';
 
 	// Props
@@ -68,7 +69,7 @@
 		if (cached) return cached;
 
 		const res = await fetch(
-			`https://api.github.com/repos/quick-lab/primerschemes/commits?path=primerschemes/${schemename}/${ampliconsize}/${schemeversion}/${file}&per_page=50`
+			`${GITHUB_API_URL}/commits?path=${PRIMER_CLASS}/${schemename}/${ampliconsize}/${schemeversion}/${file}&per_page=50`
 		);
 		if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
 		const commits = parseCommits(await res.json());
@@ -132,8 +133,8 @@
 
 	let githubTreeUrl;
 	$: githubTreeUrl = commitSha
-		? `https://github.com/quick-lab/primerschemes/tree/${commitSha}/primerschemes/${schemename}/${ampliconsize}/${schemeversion}`
-		: `https://github.com/quick-lab/primerschemes/tree/main/primerschemes/${schemename}/${ampliconsize}/${schemeversion}`;
+		? `${GITHUB_URL}/tree/${commitSha}/${PRIMER_CLASS}/${schemename}/${ampliconsize}/${schemeversion}`
+		: `${GITHUB_URL}/tree/main/${PRIMER_CLASS}/${schemename}/${ampliconsize}/${schemeversion}`;
 
 	function download(content, filename) {
 		let file = new File([content], filename, {
@@ -209,7 +210,7 @@
 	</dialog>
 {:else}
 	{#if commitSha}
-		<p class="pin-notice">Pinned to commit <a href="https://github.com/quick-lab/primerschemes/commit/{commitSha}" target="_blank" rel="noopener"><code>{commitSha.slice(0, 7)}</code></a> &mdash; <a href="/detail/{schemename}/{ampliconsize}/{schemeversion}/">view latest</a></p>
+		<p class="pin-notice">Pinned to commit <a href="{GITHUB_URL}/commit/{commitSha}" target="_blank" rel="noopener"><code>{commitSha.slice(0, 7)}</code></a> &mdash; <a href="/detail/{schemename}/{ampliconsize}/{schemeversion}/">view latest</a></p>
 	{/if}
 
 	<div class="grid level">
@@ -462,7 +463,7 @@
 									</td>
 									<td>
 										<a
-											href="https://github.com/quick-lab/primerschemes/commit/{entry.sha}"
+											href="{GITHUB_URL}/commit/{entry.sha}"
 											target="_blank"
 											rel="noopener"
 										>{entry.sha.slice(0, 7)}</a>
@@ -483,10 +484,10 @@
 
 	<giscus-widget
 		id="comments"
-		repo="quick-lab/primerschemes"
-		repoid="R_kgDOKTGGTw"
-		category="Announcements"
-		categoryid="DIC_kwDOKTGGT84CcWWD"
+		repo={GISCUS_REPO}
+		repoid={GISCUS_REPO_ID}
+		category={GISCUS_CATEGORY}
+		categoryid={GISCUS_CATEGORY_ID}
 		reactionsenabled="1"
 		emitmetadata="0"
 		inputposition="top"
