@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import AmpliconPlot from '$lib/components/DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from '$lib/components/AdvancedPlot.svelte';
-	import { GITHUB_URL, GITHUB_API_URL, PRIMER_CLASS, GISCUS_REPO, GISCUS_REPO_ID, GISCUS_CATEGORY, GISCUS_CATEGORY_ID } from '$lib/config.js';
+	import { GITHUB_URL, GISCUS_REPO, GISCUS_REPO_ID, GISCUS_CATEGORY, GISCUS_CATEGORY_ID } from '$lib/config.js';
+	import { loadVersionHistory as _loadVersionHistory } from '$lib/versionHistory.js';
 	import 'giscus';
 
 	// Props
@@ -31,79 +32,11 @@
 	let versionHistoryLoading = false;
 	let versionHistoryErrored = false;
 
-	const HISTORY_CACHE_PREFIX = 'version-history:v1:';
-	const HISTORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-	function readHistoryCache(key) {
-		try {
-			const raw = sessionStorage.getItem(key);
-			if (!raw) return null;
-			const entry = JSON.parse(raw);
-			if (Date.now() - entry.fetchedAt > HISTORY_CACHE_TTL) return null;
-			return entry.data;
-		} catch {
-			return null;
-		}
-	}
-
-	function writeHistoryCache(key, data) {
-		try {
-			sessionStorage.setItem(key, JSON.stringify({ data, fetchedAt: Date.now() }));
-		} catch {
-			// Ignore quota errors
-		}
-	}
-
-	function parseCommits(json) {
-		return json.map((c) => ({
-			sha: c.sha,
-			date: c.commit.author.date,
-			message: c.commit.message.split('\n')[0],
-			author: c.commit.author.name
-		}));
-	}
-
-	async function fetchFileHistory(file) {
-		const cacheKey = `${HISTORY_CACHE_PREFIX}${schemename}/${ampliconsize}/${schemeversion}/${file}`;
-		const cached = readHistoryCache(cacheKey);
-		if (cached) return cached;
-
-		const res = await fetch(
-			`${GITHUB_API_URL}/commits?path=${PRIMER_CLASS}/${schemename}/${ampliconsize}/${schemeversion}/${file}&per_page=50`
-		);
-		if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
-		const commits = parseCommits(await res.json());
-		writeHistoryCache(cacheKey, commits);
-		return commits;
-	}
-
 	async function loadVersionHistory() {
 		if (combinedHistory || versionHistoryLoading) return;
 		versionHistoryLoading = true;
 		try {
-			const [bedCommits, infoCommits] = await Promise.all([
-				fetchFileHistory('primer.bed'),
-				fetchFileHistory('info.json')
-			]);
-			const bedShas = new Set(bedCommits.map((c) => c.sha));
-			const infoShas = new Set(infoCommits.map((c) => c.sha));
-
-			const allCommits = new Map();
-			for (const c of bedCommits) {
-				allCommits.set(c.sha, { ...c, changes: infoShas.has(c.sha) ? 'both' : 'scheme' });
-			}
-			for (const c of infoCommits) {
-				if (!allCommits.has(c.sha)) {
-					allCommits.set(c.sha, { ...c, changes: 'metadata' });
-				}
-			}
-
-			combinedHistory = [...allCommits.values()].sort(
-				(a, b) => new Date(b.date) - new Date(a.date)
-			);
-			if (combinedHistory.length > 0) {
-				combinedHistory[combinedHistory.length - 1].added = true;
-			}
+			combinedHistory = await _loadVersionHistory({ schemename, ampliconsize, schemeversion });
 		} catch (err) {
 			console.error(err);
 			versionHistoryErrored = true;
