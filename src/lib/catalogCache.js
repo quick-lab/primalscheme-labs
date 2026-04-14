@@ -1,7 +1,8 @@
 import { flattenedSchemeIndex } from './flattenedSchemes.js';
+import { GITHUB_RAW_URL, GITHUB_BRANCH } from '$lib/config.js';
 
-const INDEX_URL = 'https://raw.githubusercontent.com/quick-lab/primerschemes/main/index.json';
-const ALIASES_URL = 'https://raw.githubusercontent.com/quick-lab/primerschemes/main/aliases.json';
+const INDEX_URL = `${GITHUB_RAW_URL}/${GITHUB_BRANCH}/index.json`;
+const ALIASES_URL = `${GITHUB_RAW_URL}/${GITHUB_BRANCH}/aliases.json`;
 
 const CACHE_NAMESPACE = 'catalog-cache:v1';
 const CACHE_KEYS = {

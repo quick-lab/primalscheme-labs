@@ -2,11 +2,21 @@
 	export let bedfileUrl;
 	export let hidden = false;
 
-	import { onMount } from 'svelte';
+	import { onMount, afterUpdate } from 'svelte';
 
 	let bedfileText = false;
 	let loading = true;
 	let errored = false;
+	let plotDivs = [];
+	let Plotly = null;
+
+	afterUpdate(() => {
+		if (!hidden && Plotly && plotDivs.length > 0) {
+			for (const div of plotDivs) {
+				Plotly.Plots.resize(div);
+			}
+		}
+	});
 
 	function generateDefaultPlot(amplicons, div, chromname, Plotly, pools, length) {
 		let npools = Math.max(...pools);
@@ -153,7 +163,7 @@
 	onMount(async function () {
 		try {
 			// Load the bedfile
-			let Plotly = (await import('plotly.js-dist-min')).default;
+			Plotly = (await import('plotly.js-dist-min')).default;
 			const response = await fetch(bedfileUrl);
 			if (!response.ok) {
 				throw new Error(`Unable to load bedfile: ${response.status}`);
@@ -262,6 +272,7 @@
 
 				let plotBody = document.getElementById('defaultPlot');
 				plotBody.append(PlotdivElement);
+				plotDivs.push(PlotdivElement);
 
 				// Get the length of each msa
 				let chromLength = Math.max(...amplicons.map((a) => a.stop));

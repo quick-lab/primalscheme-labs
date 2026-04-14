@@ -2,6 +2,7 @@
 	import primalLogo from '$lib/assets/img/primal-logo.png';
 	import gitHubLogo from '$lib/assets/img/github-mark.svg';
 	import { base } from '$app/paths';
+	import { GITHUB_URL } from '$lib/config.js';
 </script>
 
 <header class="is-fixed-above-lg is-fixed">
@@ -15,7 +16,7 @@
 				<li><a href="{base}/">Search</a></li>
 				<li><a href="{base}/faqs">FAQs</a></li>
 				<li><a href="{base}/about">About</a></li>
-				<li><a href="https://github.com/quick-lab/primerschemes">GitHub</a></li>
+				<li><a href={GITHUB_URL}>GitHub</a></li>
 				<li>
 					<button
 						class="secondary"
