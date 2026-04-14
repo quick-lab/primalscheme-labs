@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import AmpliconPlot from '$lib/components/DefaultAmpliconPlot.svelte';
 	import AdvancedPlot from '$lib/components/AdvancedPlot.svelte';
-	import { GITHUB_URL, GISCUS_REPO, GISCUS_REPO_ID, GISCUS_CATEGORY, GISCUS_CATEGORY_ID } from '$lib/config.js';
+	import { GITHUB_URL, PRIMER_CLASS, GISCUS_REPO, GISCUS_REPO_ID, GISCUS_CATEGORY, GISCUS_CATEGORY_ID } from '$lib/config.js';
 	import { loadVersionHistory as _loadVersionHistory } from '$lib/versionHistory.js';
 	import 'giscus';
 
@@ -415,21 +415,25 @@
 		</div>
 	</article>
 
-	<giscus-widget
-		id="comments"
-		repo={GISCUS_REPO}
-		repoid={GISCUS_REPO_ID}
-		category={GISCUS_CATEGORY}
-		categoryid={GISCUS_CATEGORY_ID}
-		reactionsenabled="1"
-		emitmetadata="0"
-		inputposition="top"
-		theme="light"
-		lang="en"
-		loading="lazy"
-		term="{schemename}/{ampliconsize}/{schemeversion}"
-		mapping="specific"
-	/>
+	{#if !commitSha}
+		<giscus-widget
+			id="comments"
+			repo={GISCUS_REPO}
+			repoid={GISCUS_REPO_ID}
+			category={GISCUS_CATEGORY}
+			categoryid={GISCUS_CATEGORY_ID}
+			reactionsenabled="1"
+			emitmetadata="0"
+			inputposition="top"
+			theme="light"
+			lang="en"
+			loading="lazy"
+			term="{schemename}/{ampliconsize}/{schemeversion}"
+			mapping="specific"
+		/>
+	{:else}
+		<p class="pin-notice">Comments are disabled for pinned views. <a href="/detail/{schemename}/{ampliconsize}/{schemeversion}/">View latest</a> to join the discussion.</p>
+	{/if}
 {/if}
 
 <style>
