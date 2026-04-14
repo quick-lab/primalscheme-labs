@@ -105,6 +105,61 @@
 	</ul>
 </article>
 
+<article>
+	<header>
+		<nav>
+			<li><strong>What is Version History?</strong></li>
+		</nav>
+	</header>
+	<p>
+		Each scheme page has a Version History section that lists all git commits which modified files
+		within that scheme. This allows you to see when a scheme was first added and track any
+		subsequent changes.
+	</p>
+
+	<h6>Change tags</h6>
+	<p>Each commit is labelled with one of the following tags indicating what was changed:</p>
+	<nav>
+		<ul>
+			<li><span class="changes-pill scheme">scheme</span></li>
+			<li>The scheme files (primer.bed, reference.fasta) were modified.</li>
+		</ul>
+	</nav>
+	<nav>
+		<ul>
+			<li><span class="changes-pill metadata">metadata</span></li>
+			<li>Only the metadata (info.json) was modified, e.g. status, description, or author updates.</li>
+		</ul>
+	</nav>
+	<nav>
+		<ul>
+			<li><span class="changes-pill both">both</span></li>
+			<li>Both the scheme files and metadata were modified in the same commit.</li>
+		</ul>
+	</nav>
+	<nav>
+		<ul>
+			<li><span class="changes-pill added">added</span></li>
+			<li>The earliest commit for this scheme, marking when it was first added to the repository.</li>
+		</ul>
+	</nav>
+
+	<h6>Pinned views</h6>
+	<p>
+		Each commit in the version history links to a pinned view, which shows the scheme files
+		exactly as they were at that point in time. Pinned URLs are permanent and will not change
+		if the scheme is later updated.
+	</p>
+
+	<h6>Rate limiting</h6>
+	<p>
+		Version history is fetched from the public GitHub API, which allows 60 requests per hour
+		per visitor. If you see an error loading version history, this limit may have been exceeded.
+		Waiting a few minutes will restore access. Results are cached for 5 minutes to minimise
+		API usage.
+	</p>
+</article>
+
 <style>
 	@import '$lib/assets/css/pills.css';
 	article header {
@@ -117,5 +172,29 @@
 	article header a:hover {
 		color: rgb(255, 254, 247);
 		text-decoration: underline;
+	}
+	.changes-pill {
+		display: inline-block;
+		padding: 0.15em 0.5em;
+		border-radius: 4px;
+		font-size: 0.85em;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+	.changes-pill.scheme {
+		background: #e1f5e1;
+		color: #2a6e2a;
+	}
+	.changes-pill.metadata {
+		background: #e1edff;
+		color: #1a3a5c;
+	}
+	.changes-pill.both {
+		background: #fff3e0;
+		color: #8a5a00;
+	}
+	.changes-pill.added {
+		background: #e8def8;
+		color: #4a1a8a;
 	}
 </style>
