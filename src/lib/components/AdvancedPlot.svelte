@@ -2,9 +2,11 @@
 	export let bedfileUrl;
 	export let hidden = false;
 
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount, afterUpdate, createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
+	let plotDivs = [];
+	let Plotly = null;
 
 	async function decompressBlob(blob) {
 		let ds = new DecompressionStream('gzip');
@@ -352,9 +354,17 @@
 	let loading = true;
 	let errored = false;
 
+	afterUpdate(() => {
+		if (!hidden && Plotly && plotDivs.length > 0) {
+			for (const div of plotDivs) {
+				Plotly.Plots.resize(div);
+			}
+		}
+	});
+
 	onMount(async function () {
 		// this will try and load data from the bedfileUrl
-		let Plotly = (await import('plotly.js-dist-min')).default;
+		Plotly = (await import('plotly.js-dist-min')).default;
 		try {
 
 			let baseurl = bedfileUrl.split('/').slice(0, -1).join('/');
@@ -373,6 +383,7 @@
 
 						let plotBody = document.getElementById('advancedPlot');
 						plotBody.append(PlotdivElement);
+						plotDivs.push(PlotdivElement);
 
 						generateAdvancedPlot(plotData, PlotdivElement, chromname, Plotly);
 					};
