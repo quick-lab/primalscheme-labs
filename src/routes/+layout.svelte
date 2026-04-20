@@ -19,6 +19,13 @@
 				<li><a href={GITHUB_URL}>GitHub</a></li>
 				<li>
 					<button
+						class="outline secondary"
+						onClick="javascript:window.location.href='https://forms.office.com/e/EdRK139JVG'" 
+						>Request Scheme</button
+					>
+				</li>
+				<li>
+					<button
 						class="secondary"
 						onClick="javascript:window.location.href='https://primalscheme.com'"
 						>Create Scheme</button
