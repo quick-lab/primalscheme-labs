@@ -31,6 +31,7 @@
 		let ampliconPointDataX = [];
 		let ampliconPointDataY = [];
 		let ampliconPointDataLabel = [];
+		let ampliconPointHoverTemplates = [];
 
 		// Handle regular amplicons
 		for (var i = 0; i < amplicons.length; i++) {
@@ -94,12 +95,24 @@
 			// FPrimer
 			ampliconPointDataX.push(amplicon.start);
 			ampliconPointDataY.push(amplicon.pool);
-			ampliconPointDataLabel.push(amplicon.amplicionUUID + '_' + amplicon.ampliconNumber + '_LEFT');
+			ampliconPointDataLabel.push(
+				amplicon.forwardPrimers
+					.map((p) => `${p.primername} ${p.start} ${p.stop} ${p.sequence ?? 'N/A'}`)
+					.join('<br>')
+			);
+			ampliconPointHoverTemplates.push(
+				`<b>${amplicon.amplicionUUID}_${amplicon.ampliconNumber}_LEFT</b><br>%{text}<extra></extra>`
+			);
 			//RPrimer
 			ampliconPointDataX.push(amplicon.stop);
 			ampliconPointDataY.push(amplicon.pool);
 			ampliconPointDataLabel.push(
-				amplicon.amplicionUUID + '_' + amplicon.ampliconNumber + '_RIGHT'
+				amplicon.reversePrimers
+					.map((p) => `${p.primername} ${p.start} ${p.stop} ${p.sequence ?? 'N/A'}`)
+					.join('<br>')
+			);
+			ampliconPointHoverTemplates.push(
+				`<b>${amplicon.amplicionUUID}_${amplicon.ampliconNumber}_RIGHT</b><br>%{text}<extra></extra>`
 			);
 		}
 
@@ -110,10 +123,11 @@
 		let ampliconData = {
 			x: ampliconPointDataX,
 			y: ampliconPointDataY,
-			type: 'scattergl',
+			type: 'scatter',
 			mode: 'markers',
-			hovertemplate: '%{text}<extra></extra>',
+			hovertemplate: ampliconPointHoverTemplates,
 			text: ampliconPointDataLabel,
+			hoverlabel: { font: { family: 'Courier New, monospace' } },
 			opacity: 0
 		};
 		let ampliconLayout = {
@@ -198,6 +212,7 @@
 					primername: fields[3],
 					pool: parseInt(fields[4]),
 					strand: fields[5],
+					sequence: fields[6] ? fields[6].trim() : null,
 					amplicon_number: parseInt(fields[3].split('_')[1]) // Parse amplicon number from uuid_amp_dir_primernumber
 				};
 				primerData.push(primer);
